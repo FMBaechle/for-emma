@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#070a22">
+<title>Christmas for Emma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a two-act story on one screen. Act 1 = snowy village at night (SVG, camera zooms into a window). Act 2 = cosy living room (SVG). Gifts open in modal "rooms". Single warm night look by design. */
+:root{
+  --night:#0d1230; --plum:#2b2152;
+  --gold:#ffd27f; --gold-deep:#e9a63c;
+  --red:#c8333f; --pine:#1d5a45;
+  --snow:#eef3ff; --ink:#2a2244; --paper:#fffaf3;
+  --muted:#d7d2f0;
+  --f-display:"IM Fell English", "Cormorant Garamond", Georgia, serif;
+  --f-body:"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-hand:"Caveat", "Segoe Print", "Bradley Hand", cursive;
+  color-scheme: dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--night);color:var(--snow);font-family:var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent}
+#app{position:relative;height:100%;width:100%;overflow:hidden;background:#070a22}
+.layer{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity 1.1s ease}
+#int{opacity:0;pointer-events:none;background:#3a1f22}
+#app.inside #int{opacity:1;pointer-events:auto}
+#app.inside #ext{opacity:0;pointer-events:none}
+#flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 55%, #fff1c9, #ffcf7a 40%, rgba(255,180,90,0) 75%);opacity:0;pointer-events:none;transition:opacity .7s}
+#flash.on{opacity:1}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+/* ---------- header ---------- */
+.top{position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none;transition:opacity .8s;
+  padding-top:calc(env(safe-area-inset-top,0px) + 22px);
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.top.dim{opacity:0}
+.top h1{padding:0 40px;font-family:var(--f-display);font-style:italic;font-weight:600;margin:0;font-size:clamp(34px,6.2vw,64px);line-height:1.02;
+  color:#fff6e4;text-shadow:0 0 22px rgba(255,210,127,.45),0 2px 0 rgba(0,0,0,.3);text-wrap:balance}
+.top h1 span{color:var(--gold)}
+.top .de{font-family:var(--f-display);font-style:italic;font-size:clamp(16px,2.8vw,21px);color:#efe2c4;opacity:.85;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#grain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;opacity:.45;background-size:180px 180px}
+.ink :is(path,rect,ellipse,circle):not([stroke]):not([fill^="url"]):not(.bulb):not(.nostroke){stroke:#2b1720;stroke-opacity:.55;stroke-width:1.4px;stroke-linejoin:round}
+.top p{margin:8px auto 0;max-width:36ch;font-size:clamp(14px,2vw,17px);color:var(--muted);text-wrap:balance;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.countdown{display:inline-flex;gap:10px;align-items:baseline;margin-top:12px;padding:7px 14px;border-radius:999px;
+  background:rgba(30,14,20,.55);border:1px solid rgba(255,210,127,.3);font-size:13px;letter-spacing:.02em;color:#f3ead6;
+  backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
+.countdown b{color:var(--gold);font-weight:700}
+.countdown{white-space:nowrap}
+@media (max-width:420px){.countdown{font-size:12px;gap:7px;padding:6px 11px}}
+.hint{display:block;margin-top:10px;font-family:var(--f-hand);font-size:25px;color:#fff3d6;text-shadow:0 1px 8px rgba(0,0,0,.7);opacity:0;transition:opacity .8s}
+.hint.show{opacity:1;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px)}}
+
+.iconbtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(14px, env(safe-area-inset-right,0px));
+  width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,210,127,.35);background:rgba(13,18,48,.55);color:var(--gold);
+  font-size:18px;cursor:pointer;display:grid;place-items:center;z-index:5}
+.skip{position:absolute;right:max(14px, env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:6;
+  border:0;border-radius:999px;padding:9px 14px;background:rgba(13,18,48,.55);color:#e8e3ff;font:700 13px var(--f-body);cursor:pointer;letter-spacing:.03em}
+.iconbtn.door{top:calc(env(safe-area-inset-top,0px) + 64px);animation:doorHi 2.4s ease-in-out 2}
+@keyframes doorHi{50%{box-shadow:0 0 0 7px rgba(255,210,127,.25)}}
+.iconbtn:focus-visible,button:focus-visible,[role=button]:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* start card */
+.start{position:absolute;inset:0;display:grid;place-items:center;z-index:8;background:radial-gradient(ellipse at 50% 60%, rgba(7,10,34,.15), rgba(7,10,34,.65));transition:opacity .9s}
+.start.gone{opacity:0;pointer-events:none}
+.start button{border:1px solid rgba(255,210,127,.55);background:rgba(20,16,50,.7);color:#fff6e4;border-radius:999px;padding:16px 28px;cursor:pointer;
+  font:600 italic clamp(24px,4vw,32px) var(--f-display);box-shadow:0 0 40px rgba(255,210,127,.25);animation:breathe 2.6s ease-in-out infinite;backdrop-filter:blur(4px)}
+.start small{display:block;margin-top:10px;text-align:center;color:var(--muted);font-size:13px}
+@keyframes breathe{50%{box-shadow:0 0 70px rgba(255,210,127,.5);transform:scale(1.03)}}
+
+/* ---------- shared svg animation ---------- */
+svg .tw{animation:tw 3s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
+.bulb{animation:bulb 1.6s ease-in-out infinite}
+@keyframes bulb{0%,100%{opacity:.35}50%{opacity:1}}
+.pulse-star{transform-box:fill-box;transform-origin:center;animation:starPulse 3s ease-in-out infinite}
+@keyframes starPulse{50%{transform:scale(1.12)}}
+.wave{transform-box:fill-box;transform-origin:0% 100%;animation:wave 1.4s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
+.hop{transform-box:fill-box;transform-origin:center bottom;animation:hop 1.1s cubic-bezier(.3,0,.4,1) infinite}
+@keyframes hop{0%,100%{transform:translateY(0) scaleY(1)}10%{transform:scaleY(.9)}45%{transform:translateY(-22px) scaleY(1.04)}80%{transform:translateY(0)}}
+.march{transform-box:fill-box;transform-origin:center bottom;animation:march .46s ease-in-out infinite alternate}
+@keyframes march{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-7px) rotate(2deg)}}
+.stickL,.stickR{transform-box:fill-box;transform-origin:0% 0%;animation:stick .23s ease-in-out infinite alternate}.stickR{animation-delay:.23s}
+@keyframes stick{to{transform:rotate(-14deg)}}
+.parade{animation:parade 24s linear -4s infinite}
+@keyframes parade{from{transform:translateX(-200px)}to{transform:translateX(1750px)}}
+.ride{animation:ride 17s linear 1.5s infinite;transform:translateX(-300px)}
+@keyframes ride{0%{transform:translateX(-300px)}55%{transform:translateX(1300px)}100%{transform:translateX(1300px)}}
+.ride .bounce{animation:bobS .35s ease-in-out infinite}
+.wheel{transform-box:fill-box;transform-origin:center;animation:spin .45s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.kick{transform-box:fill-box;transform-origin:100% 0%;animation:kick .7s ease-in-out infinite alternate}
+@keyframes kick{from{transform:rotate(-10deg)}to{transform:rotate(40deg)}}
+.nod{transform-box:fill-box;transform-origin:0% 100%;animation:nod 3.2s ease-in-out infinite}
+@keyframes nod{0%,60%,100%{transform:rotate(0)}75%{transform:rotate(10deg)}88%{transform:rotate(-3deg)}}
+.graze{transform-box:fill-box;transform-origin:0% 0%;animation:graze 5s ease-in-out infinite}
+@keyframes graze{0%,100%{transform:rotate(0)}40%,70%{transform:rotate(62deg)}}
+.nose{animation:nose 1.8s ease-in-out infinite}
+@keyframes nose{50%{opacity:.5}}
+.tail{transform-box:fill-box;transform-origin:100% 100%;animation:tail .7s ease-in-out infinite}
+@keyframes tail{50%{transform:rotate(-20deg)}}
+.legF{transform-box:fill-box;transform-origin:50% 0%;animation:legF .5s ease-in-out infinite alternate}
+.legB{transform-box:fill-box;transform-origin:50% 0%;animation:legF .5s .25s ease-in-out infinite alternate-reverse}
+@keyframes legF{from{transform:rotate(-38deg)}to{transform:rotate(30deg)}}
+.smoke{animation:smoke 4s linear infinite;opacity:0}
+@keyframes smoke{0%{transform:translate(0,0) scale(.6);opacity:0}20%{opacity:.45}100%{transform:translate(22px,-90px) scale(1.8);opacity:0}}
+.aurora{animation:aur 9s ease-in-out infinite alternate}
+@keyframes aur{from{opacity:.16;transform:translateX(-20px)}to{opacity:.4;transform:translateX(20px)}}
+.bob{animation:bobS 3s ease-in-out infinite}
+@keyframes bobS{50%{transform:translateY(-3px)}}
+.flicker{animation:flicker .18s steps(2) infinite alternate}
+@keyframes flicker{from{opacity:.85}to{opacity:1}}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flame .9s ease-in-out infinite alternate}
+.flame.f2{animation-duration:.7s;animation-delay:-.3s}.flame.f3{animation-duration:1.1s;animation-delay:-.6s}
+@keyframes flame{0%{transform:scale(1,1) skewX(0)}50%{transform:scale(.92,1.12) skewX(4deg)}100%{transform:scale(1.05,.9) skewX(-4deg)}}
+.fireglow{animation:fglow 1.3s ease-in-out infinite alternate}
+@keyframes fglow{from{opacity:.55}to{opacity:.85}}
+.breathe{transform-box:fill-box;transform-origin:50% 100%;animation:catb 3.4s ease-in-out infinite}
+@keyframes catb{50%{transform:scale(1.03,1.06)}}
+.steam{animation:steam 3s ease-out infinite;opacity:0}
+@keyframes steam{0%{opacity:0;transform:translateY(0)}30%{opacity:.6}100%{opacity:0;transform:translateY(-30px)}}
+.candle{transform-box:fill-box;transform-origin:50% 100%;animation:flame .6s ease-in-out infinite alternate}
+.winsleigh{animation:winsl 16s linear infinite}
+@keyframes winsl{0%,60%{transform:translate(-80px,0)}100%{transform:translate(280px,-40px)}}
+
+/* big gift (inside) */
+#bigGift{cursor:pointer;outline:none;opacity:0}
+#bigGift.here{opacity:1}
+#bigGiftInner{transform-box:fill-box;transform-origin:center bottom}
+#bigGift.grow #bigGiftInner{animation:grow 5s cubic-bezier(.4,0,.2,1) both, pulse 2.4s 5s ease-in-out infinite}
+@keyframes grow{from{transform:scale(.55)}to{transform:scale(1)}}
+@keyframes pulse{50%{transform:scale(1.06)}}
+#bigGlow{transform-box:fill-box;transform-origin:center;opacity:0}
+#bigGift.grow #bigGlow{animation:glowIn 5s ease-out both, glowPulse 2.4s 5s ease-in-out infinite}
+@keyframes glowIn{from{opacity:0;transform:scale(.4)}to{opacity:.95;transform:scale(1)}}
+@keyframes glowPulse{50%{opacity:1;transform:scale(1.12)}}
+#bigGift.shake #bigGiftInner{animation:shake .5s ease-in-out 2}
+@keyframes shake{0%,100%{transform:rotate(0) scale(1.05)}25%{transform:rotate(-6deg) scale(1.08)}75%{transform:rotate(6deg) scale(1.08)}}
+#bigGift.nope #bigGiftInner{animation:nope .45s ease-in-out}
+@keyframes nope{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#bigLid{transform-box:fill-box;transform-origin:center;transition:transform 1s cubic-bezier(.2,.7,.3,1),opacity 1s}
+#bigGift.open #bigLid{transform:translate(-60px,-260px) rotate(-38deg);opacity:0}
+#bigBody{transition:transform .7s .5s ease-in,opacity .7s .5s}
+#bigGift.open #bigBody{transform:translateY(20px);opacity:0}
+#burst{transform-box:fill-box;transform-origin:center;opacity:0}
+#bigGift.open #burst{animation:burst 1.4s ease-out forwards}
+@keyframes burst{0%{opacity:0;transform:scale(.2) rotate(0)}25%{opacity:1}100%{opacity:0;transform:scale(2.6) rotate(40deg)}}
+
+/* small gifts */
+.gift{cursor:pointer;outline:none}
+.gift .pop{transform-box:fill-box;transform-origin:center bottom;transition:transform .9s cubic-bezier(.25,1.4,.4,1),opacity .4s}
+.gift .lift{transition:transform .25s}
+.gift:hover .lift,.gift:focus-visible .lift{transform:translateY(-6px)}
+.gift .tag{font-family:var(--f-hand);font-size:20px;fill:#fff3d6;paint-order:stroke;stroke:rgba(40,18,20,.85);stroke-width:4px;text-anchor:middle}
+.gift.done .tag{fill:#c6f5d3}
+.gift .halo{opacity:0;transition:opacity .4s}
+.gift:hover .halo,.gift:focus-visible .halo{opacity:.9}
+
+/* ---------- modals ---------- */
+.modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(20,8,12,.7);backdrop-filter:blur(6px);
+  padding:calc(env(safe-area-inset-top,0px) + 12px) max(12px, env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(12px, env(safe-area-inset-left,0px));
+  animation:mIn .35s ease-out}
+@keyframes mIn{from{opacity:0}}
+.panel{position:relative;width:min(880px,100%);max-height:100%;overflow:auto;background:var(--paper);color:var(--ink);border-radius:22px;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);animation:pIn .5s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pIn{from{transform:translateY(24px) scale(.96);opacity:0}}
+.panel header{padding:22px 24px 6px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#a2405a}
+.panel h2{font-family:var(--f-display);font-style:italic;font-weight:600;font-size:clamp(28px,4.4vw,40px);margin:4px 0 0;line-height:1.05;text-wrap:balance}
+.panel .body{padding:8px 24px 24px}
+.close{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:#f1e6dc;color:var(--ink);font-size:20px;cursor:pointer;z-index:2}
+.stage{position:relative;border-radius:16px;overflow:hidden;background:#f6e3d8}
+.stage svg{display:block;width:100%;height:auto}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.btn{border:0;border-radius:999px;padding:11px 18px;font:700 15px var(--f-body);cursor:pointer;background:var(--ink);color:#fff}
+.small{font-size:13px;color:#6d6488}
+.giftcard{position:absolute;left:50%;top:50%;width:min(420px,86%);transform:translate(-50%,-50%) scale(.9);opacity:0;pointer-events:none;
+  background:#fff;border-radius:18px;padding:20px 22px;text-align:center;box-shadow:0 20px 50px rgba(42,34,68,.35);transition:all .6s cubic-bezier(.2,1.3,.4,1)}
+.giftcard.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.giftcard h3{font-family:var(--f-display);font-style:italic;font-size:30px;margin:4px 0 6px;line-height:1.05}
+.giftcard p{margin:0;font-size:15px;line-height:1.5}
+.giftcard .hand{font-family:var(--f-hand);font-size:22px;color:#a2405a;margin-top:8px}
+.ph{background:#fff1b8;color:#6b5400;border-radius:6px;padding:1px 6px;font-family:var(--f-body);font-size:.8em;font-weight:700;white-space:normal}
+
+@media (max-width:560px){.modal{padding-left:6px;padding-right:6px}.panel header{padding:18px 16px 4px}.panel .body{padding:6px 10px 16px}.stage{border-radius:10px}.letter{padding:16px 16px 18px;font-size:23px}}
+.letter{background:repeating-linear-gradient(#fffdf8 0 33px,#ece3f3 33px 34px);border-radius:12px;padding:22px 26px 26px;
+  font-family:var(--f-hand);font-size:25px;line-height:34px;color:#3a2f5c;box-shadow:inset 0 0 0 1px #eadfd3;max-width:62ch;margin:0 auto}
+.letter p{margin:0 0 34px}
+.letter p:last-child{margin:0}
+.letter .sign{text-align:right;font-size:30px}
+
+/* ---------- dev panel (Klickdummy) ---------- */
+.dev{position:absolute;left:max(12px, env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 14px);z-index:30;font-size:13px}
+.dev>button{border:1px dashed #ffd27f;opacity:.75;background:rgba(13,18,48,.8);color:#ffd27f;border-radius:999px;padding:8px 12px;font:700 12px var(--f-body);cursor:pointer;letter-spacing:.04em}
+.devpanel{position:absolute;left:0;top:44px;width:min(300px,calc(100vw - 24px));background:#141a3d;border:1px solid #3c3a6e;border-radius:14px;padding:14px;color:#e8e6ff;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+@media (max-width:640px){.dev .dl{display:none}.dev>button{width:42px;height:42px;padding:0}}
+.devpanel h4{margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#ffd27f}
+.devpanel label{display:flex;gap:8px;align-items:flex-start;margin:8px 0;line-height:1.35;cursor:pointer}
+.devpanel input[type=file]{font-size:12px;max-width:100%;color:#c7c3e6}
+.devpanel .f{display:grid;gap:4px;margin:10px 0}
+.devpanel button.reset{margin-top:8px;width:100%;border:0;border-radius:10px;padding:9px;background:#2f2b5c;color:#fff;font:700 13px var(--f-body);cursor:pointer}
+.devpanel small{color:#a09cc8;display:block;margin-top:6px;line-height:1.4}
+
+.toast{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(30,14,20,.9);border:1px solid rgba(255,210,127,.4);
+  color:#fff3d6;padding:16px 22px;border-radius:16px;text-align:center;font-size:15px;line-height:1.45;z-index:15;opacity:0;pointer-events:none;transition:opacity .4s;max-width:min(360px,86vw)}
+.toast.show{opacity:1}
+.toast b{font-family:var(--f-hand);font-size:28px;color:var(--gold);display:block;font-weight:700;margin-bottom:2px}
+
+/* Santa who checks if she's been good */
+.santaPop{position:absolute;left:0;right:0;bottom:0;z-index:18;display:flex;align-items:flex-end;justify-content:center;gap:0;pointer-events:none;
+  padding:0 max(12px, env(safe-area-inset-right,0px)) 0 max(12px, env(safe-area-inset-left,0px))}
+.santaPop .who{width:min(210px,44vw);flex:none;transform:translateY(110%);transition:transform .7s cubic-bezier(.2,1.3,.4,1)}
+.santaPop .who svg{display:block;width:100%;height:auto}
+.santaPop .say{pointer-events:auto;position:relative;align-self:center;margin-bottom:24vh;max-width:min(360px,52vw);background:#fffaf3;color:#2a2244;border-radius:20px;padding:16px 18px 14px;
+  box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;transform:scale(.8) translateY(20px);transform-origin:0% 100%;transition:all .45s .45s cubic-bezier(.2,1.3,.4,1);font-size:15px;line-height:1.45}
+.santaPop .say:before{content:"";position:absolute;left:-12px;bottom:26px;border:12px solid transparent;border-right-color:#fffaf3;border-left:0}
+.santaPop .say b{display:block;font-family:var(--f-display);font-style:italic;font-size:24px;color:#a2263a;margin-bottom:4px;font-weight:400}
+.santaPop .say .when{display:block;margin-top:8px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7a6a9a;font-variant-numeric:tabular-nums}
+.santaPop .say button{margin-top:12px;border:0;border-radius:999px;padding:9px 16px;background:#c8333f;color:#fff;font:800 14px var(--f-body);cursor:pointer}
+.santaPop.on .who{transform:none}
+.santaPop.on .say{opacity:1;transform:none}
+@media (max-width:560px){.santaPop{flex-direction:column;align-items:center}.santaPop .say{order:-1;margin:0 0 -6px;max-width:92vw}.santaPop .say:before{left:50%;bottom:-12px;border:12px solid transparent;border-top-color:#fffaf3;border-bottom:0;transform:translateX(-50%)}.santaPop .who{width:46vw}}
+.wag{transform-box:fill-box;transform-origin:50% 100%;animation:wag .5s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+
+/* easter eggs */
+.egg{cursor:pointer}
+.penguin{animation:peng 28s linear 5s infinite;transform:translateX(-300px)}
+@keyframes peng{0%{transform:translateX(-300px)}28%{transform:translateX(1400px)}100%{transform:translateX(1400px)}}
+.penguin .flip{transform-box:fill-box;transform-origin:100% 50%;animation:flipper .25s ease-in-out infinite alternate}
+@keyframes flipper{to{transform:rotate(-30deg)}}
+.moose{animation:moose 22s ease-in-out 6s infinite;transform:translateY(140px)}
+@keyframes moose{0%,62%{transform:translateY(140px)}70%,86%{transform:translateY(0)}94%,100%{transform:translateY(140px)}}
+.moose .lid{transform-box:fill-box;transform-origin:50% 0%;animation:blink 4s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+.disco .bulb{animation-duration:.22s!important}
+.say-pop{font-family:Caveat, cursive;font-size:20px;fill:#fff3d6;paint-order:stroke;stroke:rgba(40,18,20,.8);stroke-width:4px}
+
+@media (prefers-reduced-motion: reduce){
+  .aurora,.hop,.wave,.nod,.graze,.tail,.legF,.legB,.winsleigh{animation:none!important}
+}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <!-- ================= ACT 1: the village ================= -->
+  <svg id="ext" class="layer" viewBox="0 -120 1000 820" preserveAspectRatio="xMidYMax meet" aria-label="A snowy night village. Santa's sleigh flies in and drops presents down the chimney of a cosy house.">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#070a22"/><stop offset=".55" stop-color="#151a45"/><stop offset=".82" stop-color="#3a2a5e"/><stop offset="1" stop-color="#6b4468"/>
+      </linearGradient>
+      <linearGradient id="snowG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7ff"/><stop offset="1" stop-color="#c6d2f0"/></linearGradient>
+      <linearGradient id="snowFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9b5dc"/><stop offset="1" stop-color="#7f88b8"/></linearGradient>
+      <radialGradient id="moonG"><stop offset="0" stop-color="#fff9e8"/><stop offset=".7" stop-color="#f6ecd0"/><stop offset="1" stop-color="#e8d9b5"/></radialGradient>
+      <radialGradient id="moonGlow"><stop offset="0" stop-color="#fff2cc" stop-opacity=".45"/><stop offset="1" stop-color="#fff2cc" stop-opacity="0"/></radialGradient>
+      <radialGradient id="warm"><stop offset="0" stop-color="#ffd27f" stop-opacity=".95"/><stop offset=".4" stop-color="#ffb35c" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+      <radialGradient id="soft"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".35"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
+      <linearGradient id="aur" x1="0" x2="1"><stop offset="0" stop-color="#5ff2c0" stop-opacity="0"/><stop offset=".5" stop-color="#5ff2c0" stop-opacity=".7"/><stop offset="1" stop-color="#9a7bff" stop-opacity="0"/></linearGradient>
+      <linearGradient id="winIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe3a0"/><stop offset="1" stop-color="#ffb25a"/></linearGradient>
+      <pattern id="logs" width="60" height="16" patternUnits="userSpaceOnUse"><rect width="60" height="16" fill="#6a3d2c"/><path d="M0 15.5 H60" stroke="#4e2b20" stroke-width="2"/><circle cx="8" cy="8" r="1.5" fill="#4e2b20"/><circle cx="44" cy="8" r="1.5" fill="#4e2b20"/></pattern>
+      <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>
+
+    <rect x="-1200" y="-900" width="3400" height="1700" fill="url(#sky)"/>
+    <g id="stars"></g>
+    <path class="aurora" d="M-300 40 C 0 -60, 300 60, 600 -20 S 1100 0, 1400 -60" stroke="url(#aur)" stroke-width="60" fill="none" filter="url(#blur6)"/>
+    <g id="moon"><circle cx="770" cy="-40" r="130" fill="url(#moonGlow)"/><circle cx="770" cy="-40" r="38" fill="url(#moonG)"/>
+      <circle cx="758" cy="-50" r="6" fill="#e6d6b0" opacity=".6"/><circle cx="782" cy="-28" r="4" fill="#e6d6b0" opacity=".5"/>
+      <g id="moonFace" opacity="0"><circle cx="758" cy="-46" r="3.2" fill="#5a4a3a"/><path id="moonWink" d="M776 -46 q5 -4 10 0" stroke="#5a4a3a" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M758 -30 q12 10 24 0" stroke="#5a4a3a" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="752" cy="-36" r="4" fill="#f2a6a0" opacity=".6"/><circle cx="788" cy="-36" r="4" fill="#f2a6a0" opacity=".6"/></g>
+      <circle id="moonHit" cx="770" cy="-40" r="44" fill="#000" fill-opacity="0" class="egg"/></g>
+
+    <!-- Toronto skyline far away -->
+    <g id="skyline" fill="#261e4e">
+      <rect x="660" y="455" width="26" height="80"/><rect x="690" y="430" width="20" height="105"/>
+      <path d="M716 535 L720 330 L723 300 L725 220 L727 300 L730 330 L734 535Z"/><ellipse cx="725" cy="340" rx="14" ry="7"/><ellipse cx="725" cy="300" rx="6" ry="4"/>
+      <circle cx="725" cy="218" r="2" fill="#ff5a6a" class="tw"/>
+      <rect x="742" y="420" width="24" height="115"/><rect x="770" y="448" width="34" height="87"/><rect x="808" y="400" width="20" height="135"/><rect x="832" y="460" width="40" height="75"/>
+      <rect x="876" y="430" width="22" height="105"/><rect x="902" y="470" width="44" height="65"/><rect x="950" y="445" width="28" height="90"/><rect x="982" y="465" width="34" height="70"/>
+      <g id="winds" fill="#ffd27f"></g>
+    </g>
+
+    <path d="M-1200 520 Q -900 470 -600 505 T 0 500 T 500 490 T 1000 505 T 1600 495 T 2200 505 V 760 H -1200Z" fill="url(#snowFar)"/>
+    <g id="farPines" fill="#1b2a52"></g>
+    <path d="M-1200 560 Q -700 538 -200 556 T 400 552 T 900 558 T 1500 552 T 2200 556 V 760 H -1200Z" fill="url(#snowG)"/>
+    <g id="midPines"></g>
+
+    <!-- the house -->
+    <g id="house" class="ink">
+      <ellipse cx="500" cy="568" rx="230" ry="18" fill="#9aa8d4" opacity=".5"/>
+      <circle cx="500" cy="470" r="260" fill="url(#soft)"/>
+      <!-- chimney -->
+      <rect x="568" y="262" width="40" height="90" fill="#8a4a3a"/>
+      <path d="M568 280 h40 M568 300 h40 M568 320 h40 M588 262 v18 M578 280 v20 M598 300 v20" stroke="#6e3628" stroke-width="2"/>
+      <rect x="562" y="252" width="52" height="14" rx="3" fill="#7a3e30"/>
+      <path d="M560 254 q26 -12 56 0 v-2 q-28 -10 -56 2z" fill="#f4f7ff"/>
+      <g id="chimSmoke"><circle class="smoke" cx="588" cy="246" r="9" fill="#c7c3e6"/><circle class="smoke" style="animation-delay:1.3s" cx="588" cy="246" r="9" fill="#c7c3e6"/><circle class="smoke" style="animation-delay:2.6s" cx="588" cy="246" r="9" fill="#c7c3e6"/></g>
+      <!-- walls -->
+      <rect x="370" y="380" width="260" height="186" fill="url(#logs)"/>
+      <rect x="370" y="380" width="260" height="186" fill="#000" opacity=".08"/>
+      <!-- roof -->
+      <path d="M342 392 L500 278 L658 392 Z" fill="#5a2f3a"/>
+      <path d="M332 398 L500 270 L668 398 L652 402 L500 290 L348 402Z" fill="#f4f7ff"/>
+      <path d="M352 392 Q380 410 410 396 Q440 412 470 396 Q500 412 530 396 Q560 412 590 396 Q620 412 648 392" stroke="#f4f7ff" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path class="lightsPath" d="M350 404 L500 294 L650 404" fill="none" stroke="#3a2420" stroke-width="1.2"/>
+      <!-- attic window -->
+      <circle cx="500" cy="345" r="20" fill="url(#winIn)"/><path d="M480 345 h40 M500 325 v40" stroke="#5a2f3a" stroke-width="4"/><circle cx="500" cy="345" r="20" fill="none" stroke="#5a2f3a" stroke-width="5"/>
+      <!-- left window (the camera flies in here) -->
+      <g id="winL">
+        <circle cx="415" cy="448" r="70" fill="url(#warm)" opacity=".75"/>
+        <rect x="385" y="420" width="60" height="56" rx="4" fill="url(#winIn)"/>
+        <path d="M392 476 L392 440 Q402 426 410 440 L410 476Z" fill="#2b6a4f" opacity=".55"/>
+        <path d="M425 470 l14 -26 l14 26z" fill="#1d5a45" opacity=".7"/>
+        <path d="M385 420 q12 24 0 56 M445 420 q-12 24 0 56" fill="#a02a35" opacity=".85"/>
+        <path d="M415 420 V476 M385 448 H445" stroke="#5a2f3a" stroke-width="4"/>
+        <rect x="385" y="420" width="60" height="56" rx="4" fill="none" stroke="#5a2f3a" stroke-width="5"/>
+        <rect x="378" y="474" width="74" height="8" rx="3" fill="#f4f7ff"/>
+      </g>
+      <!-- right window -->
+      <circle cx="585" cy="448" r="60" fill="url(#warm)" opacity=".6"/>
+      <rect x="555" y="420" width="60" height="56" rx="4" fill="url(#winIn)"/>
+      <path d="M585 420 V476 M555 448 H615" stroke="#5a2f3a" stroke-width="4"/>
+      <rect x="555" y="420" width="60" height="56" rx="4" fill="none" stroke="#5a2f3a" stroke-width="5"/>
+      <rect x="548" y="474" width="74" height="8" rx="3" fill="#f4f7ff"/>
+      <!-- door + wreath -->
+      <rect x="476" y="490" width="48" height="76" rx="22" fill="#7a2a33"/>
+      <circle cx="514" cy="530" r="3" fill="#ffd27f"/>
+      <circle cx="500" cy="512" r="13" fill="none" stroke="#2b7a5b" stroke-width="7"/><circle cx="494" cy="502" r="2.4" fill="#ff4d5a"/><circle cx="508" cy="518" r="2.4" fill="#ff4d5a"/><path d="M496 524 l4 8 l4 -8" fill="#c8333f"/>
+      <!-- lanterns -->
+      <g><rect x="458" y="500" width="10" height="16" rx="2" fill="#ffd27f" class="flicker"/><circle cx="463" cy="508" r="16" fill="url(#warm)" opacity=".7" class="flicker"/></g>
+      <g><rect x="532" y="500" width="10" height="16" rx="2" fill="#ffd27f" class="flicker"/><circle cx="537" cy="508" r="16" fill="url(#warm)" opacity=".7" class="flicker"/></g>
+      <!-- path -->
+      <path d="M484 566 Q470 610 440 700 L560 700 Q530 610 516 566Z" fill="#dfe6fb"/>
+    </g>
+    <g id="houseLights"></g>
+
+    <!-- front life: reindeer, elves, snowman (generated) -->
+    <g id="front" class="ink"></g>
+
+    <g transform="translate(0,704)"><g class="penguin"><g class="ink" transform="rotate(-4)">
+      <ellipse cx="0" cy="-12" rx="30" ry="13" fill="#23253a"/><ellipse cx="4" cy="-6" rx="22" ry="7" fill="#f7f7ff"/>
+      <circle cx="30" cy="-20" r="11" fill="#23253a"/><ellipse cx="32" cy="-18" rx="6" ry="5" fill="#f7f7ff"/><circle cx="34" cy="-22" r="1.8" fill="#1b1422"/>
+      <path d="M40 -20 l10 2 l-10 3z" fill="#f0a030"/><path d="M-30 -12 l-10 -4 l2 8z M-30 -8 l-10 2 l6 5z" fill="#f0a030"/>
+      <g class="flip"><path d="M-4 -22 q-14 -10 -26 -6 q12 4 26 12z" fill="#23253a"/></g>
+      <path d="M18 -26 q6 8 14 2" stroke="#c8333f" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M20 -24 l-14 -8" stroke="#c8333f" stroke-width="4" stroke-linecap="round"/>
+      <path d="M22 -30 Q30 -46 44 -36 Q34 -36 36 -28Z" fill="#c8333f"/><circle cx="44" cy="-36" r="3" fill="#fff"/>
+    </g></g></g>
+    <g id="parade" class="parade"><g id="paradeInner" class="ink" transform="translate(0,688) scale(.78)"></g></g>
+    <!-- gifts tossed into the chimney -->
+    <g id="tossed"></g>
+
+    <!-- Santa's sleigh -->
+    <g id="sleigh" transform="translate(-600,0)"><g id="sleighInner" class="ink" transform="scale(.72)"></g></g>
+  </svg>
+
+  <!-- ================= ACT 2: the living room ================= -->
+  <svg id="int" class="layer" viewBox="0 -90 1000 790" preserveAspectRatio="xMidYMax meet" aria-label="A cosy living room with a couch, a crackling fireplace and a Christmas tree">
+    <defs>
+      <pattern id="wp" width="46" height="46" patternUnits="userSpaceOnUse"><rect width="46" height="46" fill="#7b3236"/><path d="M23 6 l6 17 l-6 17 l-6 -17z" fill="#86393d"/><circle cx="0" cy="0" r="2" fill="#9a4a4a"/><circle cx="46" cy="46" r="2" fill="#9a4a4a"/></pattern>
+      <pattern id="planks" width="140" height="34" patternUnits="userSpaceOnUse"><rect width="140" height="34" fill="#6b4430"/><path d="M0 33 H140 M90 0 V34" stroke="#55331f" stroke-width="2"/><path d="M20 12 q20 -4 40 0" stroke="#7a5038" stroke-width="2" fill="none"/></pattern>
+      <pattern id="brick" width="40" height="20" patternUnits="userSpaceOnUse"><rect width="40" height="20" fill="#a0564a"/><path d="M0 19 H40 M20 0 V10 M0 10 H40 M40 10 V20 M0 10 V20" stroke="#7d3d33" stroke-width="2"/></pattern>
+      <pattern id="plaid" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#b8323e"/><rect x="0" y="9" width="24" height="6" fill="#8e2230" opacity=".8"/><rect x="9" y="0" width="6" height="24" fill="#8e2230" opacity=".8"/><path d="M0 12 H24 M12 0 V24" stroke="#f2d27a" stroke-width="1"/></pattern>
+      <radialGradient id="fire"><stop offset="0" stop-color="#ffd27f" stop-opacity=".9"/><stop offset=".45" stop-color="#ff8a3c" stop-opacity=".35"/><stop offset="1" stop-color="#ff6a2c" stop-opacity="0"/></radialGradient>
+      <radialGradient id="lamp"><stop offset="0" stop-color="#ffe2a0" stop-opacity=".7"/><stop offset="1" stop-color="#ffe2a0" stop-opacity="0"/></radialGradient>
+      <radialGradient id="warm2"><stop offset="0" stop-color="#ffd27f" stop-opacity=".95"/><stop offset=".4" stop-color="#ffb35c" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+      <clipPath id="iwClip"><rect x="110" y="120" width="190" height="210" rx="8"/></clipPath>
+      <radialGradient id="vign" cx=".5" cy=".55" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#14060a" stop-opacity=".55"/></radialGradient>
+      <linearGradient id="nightWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1540"/><stop offset="1" stop-color="#3b2b62"/></linearGradient>
+    </defs>
+    <!-- wall + floor -->
+    <rect x="-800" y="-700" width="2600" height="1240" fill="url(#wp)"/>
+    <rect x="-800" y="440" width="2600" height="100" fill="#5b2a2c"/>
+    <path d="M-800 440 H1800" stroke="#4a2023" stroke-width="6"/>
+    <rect x="-800" y="530" width="2600" height="260" fill="url(#planks)"/>
+    <rect x="-800" y="526" width="2600" height="10" fill="#3e2418"/>
+    <!-- string of lights along ceiling -->
+    <path class="lightsPath2" d="M-300 -40 Q 0 10 250 -30 T 750 -30 T 1300 -40" fill="none" stroke="#3a2420" stroke-width="1.2"/>
+    <g id="ceilLights"></g>
+
+    <!-- window above couch -->
+    <g>
+      <rect x="110" y="120" width="190" height="210" rx="8" fill="url(#nightWin)"/>
+      <g id="iwStars" fill="#fff"></g>
+      <g clip-path="url(#iwClip)"><g class="winsleigh"><g transform="translate(140,170) scale(.35)" fill="#1a1640"><path d="M0 0 h60 q10 0 14 -14 l4 0 q-4 22 -18 24 h-64 q-8 0 -8 -6z"/><ellipse cx="110" cy="-14" rx="18" ry="7"/><ellipse cx="160" cy="-20" rx="18" ry="7"/><circle cx="180" cy="-28" r="4" fill="#ff4d5a"/></g></g></g>
+
+      <g clip-path="url(#iwClip)"><g class="moose"><g transform="translate(247,290)">
+        <g><animateTransform attributeName="transform" type="rotate" values="0 0 -30;-6 0 -30;0 0 -30;5 0 -30;0 0 -30" dur="5s" repeatCount="indefinite"/>
+        <g fill="none" stroke="#a9805a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M-12 -66 C-16 -84 -26 -94 -38 -106 M-19 -84 L-34 -86 M-27 -96 L-24 -110"/>
+          <path d="M12 -66 C16 -84 26 -94 38 -106 M19 -84 L34 -86 M27 -96 L24 -110"/></g>
+        <path d="M-14 -10 Q-16 -30 -12 -40 L12 -40 Q16 -30 14 -10Z" fill="#7a4e33"/>
+        <g><animateTransform attributeName="transform" type="rotate" values="0 -18 -58;0 -18 -58;-18 -18 -58;0 -18 -58" keyTimes="0;.8;.88;1" dur="3s" repeatCount="indefinite"/><path d="M-18 -58 q-20 -10 -30 0 q14 10 30 4z" fill="#7a4e33"/><path d="M-21 -57 q-14 -5 -22 0 q10 5 22 2z" fill="#e8b9a0"/></g>
+        <g><path d="M18 -58 q20 -10 30 0 q-14 10 -30 4z" fill="#7a4e33"/><path d="M21 -57 q14 -5 22 0 q-10 5 -22 2z" fill="#e8b9a0"/></g>
+        <path d="M-21 -60 Q-24 -40 -15 -26 Q-9 -10 0 -8 Q9 -10 15 -26 Q24 -40 21 -60 Q0 -76 -21 -60Z" fill="#8a5a3c"/>
+        <path d="M-8 -70 q8 -6 16 0 q-8 4 -16 0z" fill="#f4f6ff"/>
+        <ellipse cx="0" cy="-17" rx="12" ry="9.5" fill="#d8b48c"/>
+        <ellipse cx="0" cy="-21" rx="5.5" ry="4.2" fill="#3a2418"/><circle cx="-1.5" cy="-22.5" r="1.3" fill="#fff" opacity=".8"/>
+        <path d="M-5 -12 q5 4 10 0" stroke="#5a3826" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <circle cx="-9" cy="-44" r="3.4" fill="#1b1422"/><circle cx="9" cy="-44" r="3.4" fill="#1b1422"/><circle cx="-8" cy="-45.2" r="1.1" fill="#fff"/><circle cx="10" cy="-45.2" r="1.1" fill="#fff"/>
+        <rect class="lid" x="-13.5" y="-48.5" width="9" height="9" fill="#8a5a3c"/><rect class="lid" x="4.5" y="-48.5" width="9" height="9" fill="#8a5a3c"/>
+        <circle cx="-15" cy="-32" r="3.2" fill="#e07a7a" opacity=".45"/><circle cx="15" cy="-32" r="3.2" fill="#e07a7a" opacity=".45"/>
+        </g>
+      </g></g></g>
+      <path d="M110 290 Q170 270 220 284 T300 278 V330 H110Z" fill="#dfe6fb"/>
+      <path d="M150 290 l14 -40 l14 40z M182 289 l10 -30 l10 30z" fill="#1d3a5a"/>
+      <g id="iwSnow" fill="#fff"></g>
+      <rect x="110" y="120" width="190" height="210" rx="8" fill="none" stroke="#f3e7d6" stroke-width="10"/>
+      <path d="M205 120 V330 M110 225 H300" stroke="#f3e7d6" stroke-width="6"/>
+      <path d="M96 110 q20 120 0 230 q30 -10 40 -230z" fill="#2b6a4f"/><path d="M314 110 q-20 120 0 230 q-30 -10 -40 -230z" fill="#2b6a4f"/>
+      <rect x="88" y="104" width="234" height="10" rx="5" fill="#c9a36b"/>
+      <path d="M100 116 Q205 150 310 116" stroke="#2b7a5b" stroke-width="7" fill="none"/>
+    </g>
+
+    <!-- floor lamp + side table with cocoa -->
+    <g transform="translate(-70,0)">
+      <circle cx="0" cy="250" r="160" fill="url(#lamp)"/>
+      <rect x="-3" y="260" width="6" height="270" fill="#3a2420"/><ellipse cx="0" cy="532" rx="26" ry="6" fill="#3a2420"/>
+      <path d="M-34 260 L-22 210 H22 L34 260Z" fill="#f3d9a6"/><path d="M-34 260 H34" stroke="#d6b27a" stroke-width="3"/>
+    </g>
+    <!-- couch -->
+    <g id="couch" class="ink" transform="translate(-74,0)">
+      <ellipse cx="230" cy="560" rx="200" ry="16" fill="#2a1410" opacity=".45"/>
+      <rect x="70" y="380" width="320" height="110" rx="36" fill="#245a46"/>
+      <rect x="84" y="392" width="140" height="80" rx="26" fill="#2b6a52"/><rect x="236" y="392" width="140" height="80" rx="26" fill="#2b6a52"/>
+      <rect x="60" y="460" width="340" height="70" rx="22" fill="#1f4f3e"/>
+      <rect x="80" y="456" width="150" height="34" rx="14" fill="#2f735a"/><rect x="230" y="456" width="150" height="34" rx="14" fill="#2f735a"/>
+      <rect x="40" y="420" width="56" height="110" rx="26" fill="#245a46"/><rect x="364" y="420" width="56" height="110" rx="26" fill="#245a46"/>
+      <rect x="70" y="526" width="14" height="22" rx="4" fill="#3a2420"/><rect x="376" y="526" width="14" height="22" rx="4" fill="#3a2420"/>
+      <!-- pillows -->
+      <rect x="96" y="412" width="62" height="56" rx="14" fill="#f2d27a" transform="rotate(-10 127 440)"/>
+      <path d="M326 410 l46 8 l-6 48 l-48 -8z" fill="#c8333f"/><path d="M330 430 l36 6 M328 446 l36 6" stroke="#fff" stroke-width="3" opacity=".7"/>
+      <!-- plaid blanket -->
+      <path d="M250 400 q60 -14 96 6 l10 120 q-40 18 -90 6 q-24 -60 -16 -132z" fill="url(#plaid)"/>
+      <path d="M266 526 l0 10 M278 530 l0 10 M290 532 l0 10 M302 532 l0 10 M314 530 l0 10 M326 528 l0 10 M338 524 l0 10" stroke="#f2d27a" stroke-width="3"/>
+      <!-- sleeping cat -->
+      <g transform="translate(176,456)" id="cat" class="egg">
+        <g class="breathe">
+          <ellipse cx="0" cy="-14" rx="40" ry="18" fill="#e8a25e"/>
+          <path d="M-40 -10 q-6 18 24 18 q30 0 46 -6" stroke="#e8a25e" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <path d="M-20 -24 q10 -8 20 0 M2 -26 q10 -6 18 2" stroke="#c97d3c" stroke-width="3" fill="none"/>
+          <g id="catHead">
+            <circle cx="30" cy="-18" r="14" fill="#efb06c"/>
+            <path d="M20 -28 l2 -14 l10 9z M34 -31 l8 -12 l3 15z" fill="#efb06c"/>
+            <path id="catSleep" d="M24 -18 q3 2 6 0 M34 -18 q3 2 6 0" stroke="#5a3420" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <g id="catAwake" opacity="0"><circle cx="27" cy="-19" r="3" fill="#3d6b3a"/><circle cx="37" cy="-19" r="3" fill="#3d6b3a"/><circle cx="27.6" cy="-20" r="1" fill="#fff"/><circle cx="37.6" cy="-20" r="1" fill="#fff"/></g>
+            <circle cx="33" cy="-12" r="1.6" fill="#c4545a"/>
+          </g>
+        </g>
+        <text id="catZ" x="48" y="-34" font-family="Caveat, cursive" font-size="18" fill="#f3e7d6" opacity=".8">z<tspan font-size="14" dy="-6">z</tspan></text>
+        <text id="catSay" class="say-pop" x="46" y="-40" opacity="0">Mrrp?</text>
+      </g>
+    </g>
+
+    <!-- fireplace -->
+    <g id="fireplace" class="ink">
+      <rect x="370" y="290" width="260" height="240" fill="url(#brick)"/>
+      <rect x="370" y="290" width="260" height="240" fill="#000" opacity=".05"/>
+      <path id="fireHit" class="egg" d="M420 530 V420 Q420 380 460 380 H540 Q580 380 580 420 V530Z" fill="#1c0d0a"/>
+      <circle cx="500" cy="490" r="140" fill="url(#fire)" class="fireglow"/>
+      <!-- logs + fire -->
+      <rect x="440" y="508" width="120" height="14" rx="7" fill="#5a3420" transform="rotate(-6 500 515)"/><rect x="444" y="506" width="112" height="14" rx="7" fill="#6b4430" transform="rotate(7 500 513)"/>
+      <path class="flame" d="M450 512 C440 480 470 470 466 440 C490 462 492 486 486 512Z" fill="#ff8a3c"/>
+      <path class="flame f2" d="M470 514 C462 470 500 452 496 410 C530 446 540 486 528 514Z" fill="#ffb347"/>
+      <path class="flame f3" d="M512 512 C508 488 530 474 528 450 C552 470 556 496 546 512Z" fill="#ff8a3c"/>
+      <path class="flame f2" d="M484 514 C482 490 500 480 500 460 C516 480 518 498 514 514Z" fill="#ffe08a"/>
+      <!-- mantel -->
+      <rect x="352" y="276" width="296" height="20" rx="4" fill="#5a3420"/>
+      <rect x="360" y="294" width="280" height="6" fill="#3e2418"/>
+      <path class="lightsPath3" d="M356 292 Q390 320 430 296 Q470 322 500 296 Q530 322 570 296 Q610 320 644 292" fill="none" stroke="#2b7a5b" stroke-width="9" stroke-linecap="round"/>
+      <g id="mantelLights"></g>
+      <!-- candles -->
+      <g><rect x="380" y="246" width="12" height="30" rx="2" fill="#f5ecd8"/><path class="candle" d="M386 246 q-5 -8 0 -16 q5 8 0 16z" fill="#ffd27f"/><circle cx="386" cy="236" r="14" fill="url(#warm2)" opacity=".7"/></g>
+      <g><rect x="608" y="236" width="12" height="40" rx="2" fill="#f5ecd8"/><path class="candle" d="M614 236 q-5 -8 0 -16 q5 8 0 16z" fill="#ffd27f"/><circle cx="614" cy="226" r="14" fill="url(#warm2)" opacity=".7"/></g>
+      <!-- picture frame (later: photo of the two of you) -->
+      <g id="frame" class="egg">
+        <rect x="438" y="150" width="124" height="104" rx="4" fill="#c9a36b"/>
+        <rect x="448" y="160" width="104" height="84" fill="#f3e2c7"/>
+        <g id="framePhoto"></g>
+      </g>
+      <!-- stockings -->
+      <g transform="translate(410,300)"><path d="M-12 0 h24 v36 q0 10 10 12 q12 4 10 16 q-4 10 -24 6 q-20 -4 -20 -22z" fill="#c8333f"/><rect x="-15" y="0" width="30" height="10" rx="3" fill="#f7f7ff"/><text x="0" y="34" text-anchor="middle" font-family="Cormorant Garamond, serif" font-weight="600" font-style="italic" font-size="16" fill="#ffd27f">E</text></g>
+      <g transform="translate(590,300)" id="stockF" class="egg"><g id="mouse" opacity="0"><circle cx="0" cy="-2" r="8" fill="#9aa0ad"/><circle cx="-7" cy="-9" r="4.5" fill="#b8bdc8"/><circle cx="7" cy="-9" r="4.5" fill="#b8bdc8"/><circle cx="-3" cy="-3" r="1.4" fill="#1b1422"/><circle cx="3" cy="-3" r="1.4" fill="#1b1422"/><circle cx="0" cy="1" r="1.6" fill="#f08aa0"/><path d="M-6 -10 Q2 -26 12 -16 Q4 -16 6 -10Z" fill="#c8333f"/><circle cx="12" cy="-16" r="2" fill="#fff"/></g><path d="M12 0 h-24 v36 q0 10 -10 12 q-12 4 -10 16 q4 10 24 6 q20 -4 20 -22z" fill="#2b7a5b"/><rect x="-15" y="0" width="30" height="10" rx="3" fill="#f7f7ff"/><text x="0" y="34" text-anchor="middle" font-family="Cormorant Garamond, serif" font-weight="600" font-style="italic" font-size="16" fill="#ffd27f">F</text></g>
+    </g>
+
+    <!-- tree -->
+    <g id="itree" class="ink"></g>
+
+    <!-- rug -->
+    <ellipse cx="520" cy="632" rx="320" ry="48" fill="#9a2f37"/>
+    <ellipse cx="520" cy="632" rx="290" ry="38" fill="none" stroke="#f2d27a" stroke-width="3" stroke-dasharray="10 8"/>
+    <ellipse cx="520" cy="632" rx="250" ry="28" fill="#b23a42"/>
+
+    <!-- mug of cocoa -->
+    <g transform="translate(330,566)">
+      <rect x="-14" y="-24" width="28" height="26" rx="5" fill="#f7f7ff"/><path d="M14 -18 q12 0 12 9 q0 9 -12 9" stroke="#f7f7ff" stroke-width="4" fill="none"/>
+      <ellipse cx="0" cy="-24" rx="14" ry="3.5" fill="#6b3a24"/><path d="M-14 -14 h28" stroke="#c8333f" stroke-width="4"/>
+      <path class="steam" d="M-4 -30 q-6 -8 0 -16 q6 -8 0 -16" stroke="#fff" stroke-width="2.5" fill="none" opacity=".6"/>
+      <path class="steam" style="animation-delay:1.4s" d="M5 -30 q-6 -8 0 -16 q6 -8 0 -16" stroke="#fff" stroke-width="2.5" fill="none" opacity=".6"/>
+    </g>
+
+    <g id="smallGifts"></g>
+
+    <!-- the big glowing gift -->
+    <g id="bigGift" role="button" tabindex="0" aria-label="Open your Christmas present">
+      <g id="bigMove">
+        <g id="bigGlow"><circle cx="0" cy="-60" r="150" fill="url(#warm2)"/></g>
+        <g id="burst">
+          <g fill="#ffe6a8" opacity=".9">
+            <path d="M0 -60 L-14 -320 L14 -320Z"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(45 0 -60)"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(90 0 -60)"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(135 0 -60)"/>
+            <path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(180 0 -60)"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(225 0 -60)"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(270 0 -60)"/><path d="M0 -60 L-14 -320 L14 -320Z" transform="rotate(315 0 -60)"/>
+          </g>
+        </g>
+        <g id="bigGiftInner">
+          <ellipse cx="0" cy="2" rx="62" ry="9" fill="#3a1418" opacity=".45"/>
+          <g id="bigBody">
+            <rect x="-55" y="-86" width="110" height="86" rx="6" fill="#c8333f"/>
+            <rect x="-55" y="-86" width="110" height="86" rx="6" fill="url(#warm2)" opacity=".25"/>
+            <rect x="-10" y="-86" width="20" height="86" fill="#ffd27f"/>
+            <path d="M-55 -86 h110 v10 h-110z" fill="#a82632" opacity=".5"/>
+            <g fill="#ffe9b8" opacity=".55"><circle cx="-34" cy="-56" r="3"/><circle cx="32" cy="-30" r="3"/><circle cx="-30" cy="-18" r="2.5"/><circle cx="34" cy="-66" r="2.5"/></g>
+          </g>
+          <g id="bigLid">
+            <rect x="-62" y="-104" width="124" height="22" rx="5" fill="#d7404c"/>
+            <rect x="-11" y="-104" width="22" height="22" fill="#ffd27f"/>
+            <path d="M0 -104 C -30 -140 -58 -126 -40 -108 C -30 -100 -12 -102 0 -104 C 12 -102 30 -100 40 -108 C 58 -126 30 -140 0 -104Z" fill="#ffd27f" stroke="#e9a63c" stroke-width="2"/>
+            <circle cx="0" cy="-104" r="8" fill="#e9a63c"/>
+          </g>
+        </g>
+      </g>
+    </g>
+    <!-- a marmot on a kick scooter rides through the room -->
+    <g transform="translate(0,682)"><g class="ride"><g class="bounce"><g id="marmot" class="ink" transform="scale(1.05)">
+      <g class="kick"><path d="M-12 -30 L-28 -6" stroke="#8a5a3a" stroke-width="9" stroke-linecap="round"/></g>
+      <path d="M-36 -8 H28" stroke="#2f6fbf" stroke-width="7" stroke-linecap="round"/>
+      <path d="M26 -8 L38 -74" stroke="#9aa3b5" stroke-width="5" stroke-linecap="round"/>
+      <path d="M30 -74 H48" stroke="#3a2420" stroke-width="6" stroke-linecap="round"/>
+      <g class="wheel"><circle cx="-30" cy="0" r="8" fill="#3a2420"/><path d="M-30 -5 V5 M-35 0 H-25" stroke="#c9c9d6" stroke-width="2"/></g>
+      <g class="wheel"><circle cx="34" cy="0" r="8" fill="#3a2420"/><path d="M34 -5 V5 M29 0 H39" stroke="#c9c9d6" stroke-width="2"/></g>
+      <ellipse cx="-28" cy="-24" rx="9" ry="4.5" fill="#6e4630" transform="rotate(-25 -28 -24)"/>
+      <ellipse cx="-4" cy="-40" rx="20" ry="27" fill="#9a6a44"/>
+      <ellipse cx="2" cy="-36" rx="11" ry="18" fill="#dcb98e"/>
+      <path d="M0 -18 L2 -11" stroke="#8a5a3a" stroke-width="9" stroke-linecap="round"/>
+      <path d="M6 -52 Q24 -58 36 -72" stroke="#8a5a3a" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M-2 -60 Q10 -53 22 -60" stroke="#c8333f" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M-2 -60 q-14 -4 -26 4" stroke="#c8333f" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <circle cx="8" cy="-74" r="15" fill="#9a6a44"/>
+      <circle cx="-2" cy="-86" r="4.5" fill="#7a4d33"/><circle cx="14" cy="-88" r="4.5" fill="#7a4d33"/>
+      <ellipse cx="19" cy="-70" rx="8" ry="6" fill="#ead2b2"/>
+      <circle cx="26" cy="-72" r="2.8" fill="#3a2420"/><rect x="19" y="-66" width="4.5" height="5.5" rx="1" fill="#fff"/>
+      <circle cx="12" cy="-78" r="2.2" fill="#1b1422"/><circle cx="12.8" cy="-78.8" r=".7" fill="#fff"/>
+      <path d="M-6 -84 Q6 -108 28 -98 Q16 -95 20 -84Z" fill="#c8333f"/><rect x="-8" y="-88" width="30" height="6" rx="3" fill="#fff"/><circle cx="28" cy="-98" r="3.8" fill="#fff"/>
+    </g></g></g></g>
+    <rect x="-800" y="-700" width="2600" height="1500" fill="url(#vign)" pointer-events="none"/>
+  </svg>
+
+  <div id="grain"></div>
+  <div id="flash"></div>
+  <canvas id="fx"></canvas>
+
+  <div class="top" id="top">
+    <h1>Merry Christmas, <span id="herName">Emma</span></h1>
+    <div class="de" lang="de">Frohe Weihnachten</div>
+    <p id="sub">It's Christmas Eve, and someone is on his way…</p>
+    <div class="countdown" id="cd" hidden><span>Opens Dec 24 · 5 PM Toronto</span><b id="cdv">…</b></div>
+    <div class="hint" id="hint">Tap the present</div>
+  </div>
+  <button class="iconbtn" id="music" aria-label="Play music" title="Music">♪</button>
+  <button class="skip" id="skip" hidden>Skip intro ›</button>
+  <button class="iconbtn door" id="goOut" hidden aria-label="Step outside" title="Step outside"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 11 L12 3 L21 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10 V20 H18.5 V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20 V14 H14 V20" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 5 V3 H18 V7" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+  <button class="iconbtn door" id="goIn" hidden aria-label="Go back inside" title="Go back inside"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3 C14 7 18 9 18 14 A6 6 0 0 1 6 14 C6 11 8 9 9 7 C10 10 11 11 12 11 C12 8 11 6 12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+  <div class="toast" id="toast"></div>
+  <div class="santaPop" id="santaPop" hidden>
+    <div class="who"><svg viewBox="0 0 220 230" aria-hidden="true" class="ink">
+      <path d="M20 230 Q24 150 110 146 Q196 150 200 230Z" fill="#c8333f"/>
+      <rect x="102" y="150" width="16" height="80" fill="#f7f7ff"/>
+      <g class="wag"><path d="M176 196 Q196 160 188 112" stroke="#c8333f" stroke-width="24" stroke-linecap="round" fill="none"/><rect x="176" y="114" width="26" height="12" rx="6" fill="#f7f7ff"/>
+        <circle cx="189" cy="100" r="13" fill="#f4c7a5"/><rect x="185" y="70" width="9" height="28" rx="4.5" fill="#f4c7a5"/></g>
+      <circle cx="110" cy="96" r="44" fill="#f4c7a5"/>
+      <path d="M62 92 Q56 170 110 182 Q164 170 158 92 Q138 118 110 116 Q82 118 62 92Z" fill="#f7f7ff"/>
+      <path d="M84 116 Q97 104 110 114 Q123 104 136 116 Q123 124 110 120 Q97 124 84 116Z" fill="#ececf6"/>
+      <circle cx="110" cy="104" r="9" fill="#e79a85"/>
+      <path d="M86 84 q8 -8 16 0" stroke="#2a2244" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="128" cy="82" r="5" fill="#2a2244"/>
+      <path d="M80 70 l18 -6 M120 64 l18 4" stroke="#f7f7ff" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="80" cy="102" r="8" fill="#f19aa0" opacity=".5" class="nostroke"/><circle cx="140" cy="102" r="8" fill="#f19aa0" opacity=".5" class="nostroke"/>
+      <path d="M64 70 C66 10 150 0 186 52 L164 60 C150 40 128 36 150 64Z" fill="#c8333f"/>
+      <rect x="58" y="56" width="104" height="20" rx="10" fill="#f7f7ff"/><circle cx="186" cy="54" r="13" fill="#f7f7ff"/>
+    </svg></div>
+    <div class="say" role="dialog" aria-live="polite">
+      <b>Ho ho ho, Emma!</b>
+      Have you <i>really</i> been a good girl this year? We'll find out on December 24 at 5 PM. Until then, you'll have to be patient.
+      <span class="when" id="santaWhen"></span>
+      <button id="santaOk">OK, Santa</button>
+    </div>
+  </div>
+
+  <div class="start" id="start">
+    <div><button id="begin">Tap to begin</button><small>with sound ♪</small></div>
+  </div>
+
+</div>
+
+<!-- ============ Modal: Pilates ============ -->
+<div class="modal" id="m-pilates" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="pilTitle">
+    <button class="close" data-close aria-label="Close">×</button>
+    <header><div class="eyebrow">Present 1 · for tonight</div><h2 id="pilTitle">Our Reformer date</h2></header>
+    <div class="body">
+      <div class="stage">
+        <svg id="pil" viewBox="0 0 800 480" aria-label="Animation: the two of us doing reformer Pilates, and I fall off">
+          <defs>
+            <clipPath id="clipHead"><circle cx="0" cy="0" r="29"/></clipPath>
+            <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#131a45"/><stop offset="1" stop-color="#3a2b62"/></linearGradient>
+            <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7b08a"/><stop offset="1" stop-color="#c39a74"/></linearGradient>
+          </defs>
+          <rect width="800" height="250" fill="#f4dfd3"/>
+          <rect y="236" width="800" height="14" fill="#e8cdbf"/>
+          <!-- window -->
+          <rect x="530" y="34" width="210" height="150" rx="8" fill="url(#win)"/>
+          <g fill="#3d3775">
+            <rect x="536" y="128" width="22" height="56"/><rect x="560" y="112" width="18" height="72"/><rect x="580" y="140" width="26" height="44"/>
+            <rect x="608" y="120" width="16" height="64"/><rect x="628" y="96" width="22" height="88"/><rect x="652" y="134" width="18" height="50"/>
+            <g fill="#5a54a0"><path d="M683 184 L686 104 L688 86 L689 48 L690 86 L692 104 L695 184Z"/><ellipse cx="689" cy="110" rx="10" ry="5"/><ellipse cx="689" cy="88" rx="4" ry="3"/></g>
+            <rect x="700" y="124" width="20" height="60"/><rect x="722" y="142" width="18" height="42"/>
+          </g>
+          <circle cx="689" cy="47" r="2" fill="#ff5a6a" class="tw"/>
+          <g id="pilWinds" fill="#ffd27f"></g>
+          <g fill="#fff" opacity=".85" id="winSnow"></g>
+          <path d="M530 172 Q600 162 660 170 T740 166 V184 H530Z" fill="#dfe6fb"/>
+          <text x="545" y="58" font-family="Caveat, cursive" font-size="17" fill="#ffd27f" opacity=".9">Toronto</text>
+          <rect x="530" y="34" width="210" height="150" rx="8" fill="none" stroke="#fff" stroke-width="8"/>
+          <path d="M635 34 V184 M530 109 H740" stroke="#fff" stroke-width="5"/>
+          <path d="M524 30 Q580 58 635 34 Q690 58 746 30" stroke="#2b7a5b" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <circle cx="560" cy="44" r="3.5" fill="#ff4d5a"/><circle cx="600" cy="47" r="3.5" fill="#ffd27f"/><circle cx="670" cy="47" r="3.5" fill="#ff4d5a"/><circle cx="712" cy="43" r="3.5" fill="#ffd27f"/>
+          <path d="M628 32 l-10 22 l10 -6 l10 6z" fill="#c8333f"/>
+          <!-- little Christmas tree in the corner -->
+          <g transform="translate(46,250)" class="ink">
+            <rect x="-14" y="-16" width="28" height="16" rx="3" fill="#c8333f"/>
+            <path d="M-34 -16 L0 -64 L34 -16Z" fill="#1d5a45"/><path d="M-28 -46 L0 -92 L28 -46Z" fill="#22684f"/><path d="M-20 -78 L0 -116 L20 -78Z" fill="#267558"/>
+            <circle cx="-10" cy="-30" r="4" fill="#ffd27f" class="bulb"/><circle cx="12" cy="-38" r="4" fill="#ff6b7a" class="bulb" style="animation-delay:.5s"/><circle cx="-6" cy="-62" r="4" fill="#8fd3ff" class="bulb" style="animation-delay:1s"/><circle cx="8" cy="-84" r="3.5" fill="#ffd27f" class="bulb" style="animation-delay:.3s"/>
+            <path d="M0 -128 l4 9 l10 1 l-8 6 l3 10 l-9 -6 l-9 6 l3 -10 l-8 -6 l10 -1z" fill="#ffd27f" class="nostroke"/>
+          </g>
+          <!-- wreath -->
+          <g transform="translate(150,96)">
+            <circle r="26" fill="none" stroke="#2b7a5b" stroke-width="13"/><circle r="26" fill="none" stroke="#3f9a6e" stroke-width="4" stroke-dasharray="3 7"/>
+            <circle cx="-14" cy="-20" r="3.5" fill="#ff4d5a"/><circle cx="20" cy="-14" r="3.5" fill="#ff4d5a"/><circle cx="-22" cy="12" r="3.5" fill="#ff4d5a"/><circle cx="14" cy="21" r="3.5" fill="#ffd27f"/>
+            <path d="M-10 24 q10 -10 20 0 l-6 18 l-4 -10 l-4 10z" fill="#c8333f"/>
+          </g>
+          <!-- string lights -->
+          <path d="M0 16 Q100 46 200 18 T400 18 T600 18 T800 18" stroke="#8a6f62" stroke-width="1.5" fill="none"/>
+          <g id="pilLights"></g>
+          <!-- sign + plant -->
+          <text x="356" y="70" font-family="Caveat, cursive" font-size="23" fill="#a2405a">breathe · stretch ·</text>
+          <text x="356" y="96" font-family="Caveat, cursive" font-size="23" fill="#a2405a">stay on the machine</text>
+          <g transform="translate(470,236)">
+            <path d="M-16 0 L-12 -30 H12 L16 0Z" fill="#c87f5a"/>
+            <path d="M0 -30 q-26 -30 -6 -70 M0 -30 q20 -36 8 -76 M0 -30 q-40 -6 -42 -40 M0 -30 q36 -10 40 -46" stroke="#3f7d5c" stroke-width="6" stroke-linecap="round" fill="none"/>
+          </g>
+          <!-- floor -->
+          <rect y="250" width="800" height="230" fill="url(#floor)"/>
+          <g stroke="#b88d68" stroke-width="1.5" opacity=".7"><path d="M0 300 H800 M0 360 H800 M0 430 H800"/><path d="M120 250 V300 M420 250 V300 M260 300 V360 M610 300 V360 M90 360 V430 M480 360 V430 M330 430 V480 M700 430 V480"/></g>
+          <ellipse cx="700" cy="440" rx="120" ry="14" fill="#a87f5c" opacity=".35"/>
+
+          <g id="refE" transform="translate(170,250)"></g>
+          <g id="refF" transform="translate(110,370)"></g>
+
+          <!-- speech bubbles -->
+          <g id="bub1" opacity="0"><rect x="16" y="196" width="150" height="40" rx="20" fill="#fff"/><path d="M146 232 l26 16 l-6 -18z" fill="#fff"/><text x="91" y="223" text-anchor="middle" font-family="Caveat, cursive" font-size="24" fill="#2a2244">Watch this!</text></g>
+          <g id="bub2" opacity="0"><rect x="196" y="52" width="150" height="40" rx="20" fill="#fff"/><path d="M250 90 l6 18 l12 -18z" fill="#fff"/><text x="271" y="79" text-anchor="middle" font-family="Caveat, cursive" font-size="25" fill="#a2405a">Ha ha ha!</text></g>
+          <g id="bub3" opacity="0"><rect x="570" y="214" width="210" height="60" rx="22" fill="#fff"/><path d="M640 272 l2 18 l14 -18z" fill="#fff"/><text x="675" y="240" text-anchor="middle" font-family="Caveat, cursive" font-size="24" fill="#2a2244">I'm okay!</text><text x="675" y="264" text-anchor="middle" font-family="Caveat, cursive" font-size="20" fill="#6d6488">Totally planned.</text></g>
+          <g id="dizzy" opacity="0"></g>
+        </svg>
+        <div class="giftcard" id="pilCard">
+          <div class="eyebrow">Your present</div>
+          <h3>Reformer classes, together</h3>
+          <p><span class="ph">Platzhalter: z. B. „10 Stunden im Studio deiner Wahl in Toronto“</span></p>
+          <div class="hand">I'll practise staying on. Promise.</div>
+        </div>
+      </div>
+      <div class="row"><button class="btn" id="pilReplay">Play again</button></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ Modal: Letter ============ -->
+<div class="modal" id="m-letter" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="letTitle">
+    <button class="close" data-close aria-label="Close">×</button>
+    <header><div class="eyebrow">Present 2 · a letter</div><h2 id="letTitle">Read this one slowly</h2></header>
+    <div class="body">
+      <div class="letter">
+        <p>Dear Emma,</p>
+        <p>Four years. That's how long it had been since we last stood in the same room. Four years of messages, calls, time zones and "one day, maybe".</p>
+        <p>And then, this October, we got on a plane together for the very first time and flew to Morocco for the wedding. I still smile when I think about it. I'm so glad I found the courage to ask, and so grateful that you trusted me enough to say yes.</p>
+        <p><span class="ph">Platzhalter: ein konkreter Lieblingsmoment aus Marokko, z. B. ein Abend, ein Lachen, ein Ort</span></p>
+        <p>Since then I miss you more than I can fit into a letter. A little more every day.</p>
+        <p>So this Christmas I'm counting the sleeps until I'm in Toronto and can finally hug you again. I can't wait to see you.</p>
+        <p>Merry Christmas.</p>
+        <p class="sign">Yours, Felix</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG (alles hier später anpassbar) ================= */
+const PHOTO_E="data:image/jpeg;base64,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";
+const PHOTO_F="data:image/jpeg;base64,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";
+const PHOTO_U="data:image/jpeg;base64,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";
+const CONFIG = {
+  herName: "Emma",
+  unlockAtUTC: "2026-12-24T22:00:00Z"   // 24.12.2026, 17:00 Toronto (EST = UTC-5)
+};
+const state = { lock:true, opened:false, inside:false, photos:{felix:PHOTO_F, emma:PHOTO_E, us:PHOTO_U}, done:new Set() };
+const $ = s => document.querySelector(s);
+const NS = "http://www.w3.org/2000/svg";
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+$("#herName").textContent = CONFIG.herName;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const easeOut=t=>1-Math.pow(1-t,3), easeIn=t=>t*t*t;
+
+/* ================= views per screen shape ================= */
+const ext=$("#ext"), int=$("#int");
+let VB={}, SL=.72;
+function fit(){
+  const portrait = innerWidth/innerHeight < 0.95;
+  VB.ext = portrait ? [300,-150,440,860] : [0,-120,1000,820];
+  VB.int = portrait ? [340,-160,520,900] : [0,-90,1000,790];
+  SL = portrait ? .52 : .72; $("#sleighInner").setAttribute("transform",`scale(${SL})`);
+  if(!cam.active) ext.setAttribute("viewBox", VB.ext.join(" "));
+  int.setAttribute("viewBox", VB.int.join(" "));
+  $("#moon").setAttribute("transform", portrait ? "translate(-70,180)" : "translate(120,90)");
+  sizeFx();
+}
+addEventListener("resize", fit);
+
+/* ================= scenery builders ================= */
+function pine(x,y,s,o={}){
+  const c=o.c||"#1d5a45", c2=o.c2||"#164a39";
+  let h=`<g transform="translate(${x},${y}) scale(${s})">`;
+  if(o.glow) h+=`<circle cx="0" cy="-90" r="120" fill="url(#soft)"/>`;
+  h+=`<rect x="-7" y="-14" width="14" height="16" fill="#4a2c20"/>
+    <path d="M-60 -10 L0 -90 L60 -10 Q30 0 0 -6 Q-30 0 -60 -10Z" fill="${c}"/><path d="M0 -90 L60 -10 Q30 0 0 -6Z" fill="${c2}"/>
+    <path d="M-46 -60 L0 -132 L46 -60 Q22 -52 0 -56 Q-22 -52 -46 -60Z" fill="${c}"/><path d="M0 -132 L46 -60 Q22 -52 0 -56Z" fill="${c2}"/>
+    <path d="M-32 -104 L0 -168 L32 -104 Q16 -98 0 -101 Q-16 -98 -32 -104Z" fill="${c}"/><path d="M0 -168 L32 -104 Q16 -98 0 -101Z" fill="${c2}"/>
+    <path d="M-60 -10 Q-30 0 0 -6 Q30 0 60 -10 Q30 -4 0 -10 Q-30 -4 -60 -10Z M-46 -60 Q-22 -52 0 -56 Q22 -52 46 -60 Q22 -56 0 -60 Q-22 -56 -46 -60Z M-32 -104 Q-16 -98 0 -101 Q16 -98 32 -104 Q16 -101 0 -104 Q-16 -101 -32 -104Z" fill="#eef3ff" opacity=".85"/>
+    <path d="M-10 -160 L0 -168 L10 -160 Q0 -156 -10 -160Z" fill="#eef3ff"/>`;
+  if(o.lights){ const cols=["#ffd27f","#ff6b7a","#8fd3ff","#b6ff9e"]; let k=0;
+    for(const [y0,w] of [[-24,48],[-72,36],[-116,22]]) for(let i=-3;i<=3;i++){ const xx=i*w/3.2, yy=y0+Math.abs(i)*-3+ (i%2?3:0); const cc=cols[(k++)%4];
+      h+=`<circle class="bulb" cx="${xx.toFixed(1)}" cy="${yy}" r="3.2" fill="${cc}" style="animation-delay:${(k*.21%1.6).toFixed(2)}s"/>`; }
+    h+=`<path class="pulse-star" d="M0 -184 L4.5 -174 L15 -173 L7 -166 L10 -155 L0 -161 L-10 -155 L-7 -166 L-15 -173 L-4.5 -174Z" fill="#ffd27f"/>`;
+  }
+  return h+`</g>`;
+}
+function reindeer(x,y,s,o={}){
+  // side view facing right, origin = ground under the body. Animations are SMIL rotations around exact pivots.
+  const body=o.body||"#93603f", dark=o.dark||"#6e452e", light=o.light||"#a26b47", flip=o.flip?-1:1, d=o.delay||0;
+  const nose=o.rudolph
+    ?`<circle cx="NX" cy="NY" r="15" fill="#ff4d5a" opacity=".4" filter="url(#blur6)"><animate attributeName="opacity" values=".25;.6;.25" dur="1.8s" repeatCount="indefinite"/></circle><circle class="rnose" cx="NX" cy="NY" r="6" fill="#ff3b4b"/><circle cx="NX" cy="NY" r="2" fill="#fff" opacity=".8" transform="translate(-2,-2)"/>`
+    :`<circle cx="NX" cy="NY" r="4.5" fill="#3a2420"/>`;
+  const antlers=(hx,hy)=>`<path d="M${hx-4} ${hy-10} q-4 -16 -18 -22 M${hx-12} ${hy-22} q-12 -2 -16 -12 M${hx+4} ${hy-11} q2 -18 14 -24 M${hx+12} ${hy-25} q10 -2 12 -12" stroke="#6b4a33" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+  let neckHead;
+  if(o.graze){
+    // head down in the snow, nibbling
+    neckHead=`<g><animateTransform attributeName="transform" type="rotate" values="0 36 -62;6 36 -62;0 36 -62;4 36 -62;0 36 -62" keyTimes="0;.2;.4;.6;1" dur="2.6s" begin="${d}s" repeatCount="indefinite"/>
+      <path d="M22 -66 C40 -70 56 -54 62 -26 L48 -22 C46 -42 38 -50 26 -48Z" fill="${body}"/>
+      <g transform="translate(58,-18) rotate(70)">${antlers(0,0).replace(/stroke-width="4.5"/,'stroke-width="4"')}
+        <ellipse cx="4" cy="0" rx="15" ry="11" fill="${light}"/><ellipse cx="17" cy="2" rx="8" ry="6.5" fill="#b87d57"/>
+        ${nose.replace(/NX/g,"24").replace(/NY/g,"2")}
+        <circle cx="2" cy="-4" r="2.2" fill="#1b1422"/><path d="M-6 -8 l-9 -6 l4 10z" fill="${body}"/></g>
+      ${o.scarf?`<path d="M28 -64 q8 10 4 22" stroke="${o.scarf}" stroke-width="9" fill="none"/>`:""}</g>`;
+  } else {
+    neckHead=`<g><animateTransform attributeName="transform" type="rotate" values="0 34 -64;-4 34 -64;0 34 -64;7 34 -64;0 34 -64" keyTimes="0;.3;.5;.75;1" dur="3.6s" begin="${d}s" repeatCount="indefinite"/>
+      <path d="M22 -64 C26 -82 36 -96 48 -104 L60 -94 C50 -86 46 -72 46 -54Z" fill="${body}"/>
+      <g transform="translate(58,-104) rotate(18)">${antlers(-4,-2)}
+        <ellipse cx="0" cy="0" rx="16" ry="11" fill="${light}"/><ellipse cx="14" cy="3" rx="9" ry="7" fill="#b87d57"/>
+        ${nose.replace(/NX/g,"22").replace(/NY/g,"3")}
+        <circle cx="-1" cy="-3" r="2.4" fill="#1b1422"/><path d="M-10 -6 l-10 -7 l3 11z" fill="${body}"/></g>
+      ${o.scarf?`<path d="M24 -72 Q38 -64 50 -78" stroke="${o.scarf}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M30 -70 l-4 22 l9 1 l2 -20z" fill="${o.scarf}"/><path d="M27 -58 h9 M26 -52 h9" stroke="#fff" stroke-width="2"/>`:""}</g>`;
+  }
+  return `<g transform="translate(${x},${y}) scale(${s*flip},${s})">
+    <ellipse cx="0" cy="3" rx="54" ry="7" fill="#7e8ac0" opacity=".35" class="nostroke"/>
+    <rect x="-34" y="-46" width="8" height="46" rx="3" fill="${dark}"/><rect x="20" y="-46" width="8" height="46" rx="3" fill="${dark}"/>
+    <path d="M-44 -66 q-10 -4 -8 -14 q8 2 10 12z" fill="#f3e6d6"><animateTransform attributeName="transform" type="rotate" values="0 -42 -64;-16 -42 -64;0 -42 -64" dur=".8s" repeatCount="indefinite"/></path>
+    ${neckHead}
+    <path d="M-46 -54 C-46 -72 -24 -78 0 -76 C24 -74 40 -70 44 -56 C46 -42 30 -36 0 -36 C-28 -36 -46 -40 -46 -54Z" fill="${body}"/>
+    <path d="M-20 -40 C0 -36 22 -38 34 -44 C24 -40 0 -38 -20 -40Z" fill="#e8cfb0" opacity=".5" class="nostroke"/>
+    <rect x="-24" y="-46" width="8" height="46" rx="3" fill="${light}"/><rect x="30" y="-46" width="8" height="46" rx="3" fill="${light}"/>
+    <rect x="-26" y="-4" width="12" height="6" rx="2.5" fill="#3a2420"/><rect x="28" y="-4" width="12" height="6" rx="2.5" fill="#3a2420"/>
+  </g>`;
+}
+function elf(x,y,s,o={}){
+  const tunic=o.tunic||"#2f8a52", hat=o.hat||"#c8333f", legs=o.legs||"#c8333f", flip=o.flip?-1:1;
+  const arm=(d)=>`<path d="${d}" stroke="${tunic}" stroke-width="7" stroke-linecap="round" fill="none"/>`;
+  const hand=(x,y)=>`<circle cx="${x}" cy="${y}" r="4.5" fill="#f3cdb0"/>`;
+  let leftArm=arm("M-13 -56 q-14 8 -12 22");
+  let extra;
+  if(o.item==="drum"){ leftArm=`<g class="stickL">${arm("M-13 -56 q-10 10 -4 18")}<path d="M-17 -38 l16 -14" stroke="#e9d3a8" stroke-width="3" stroke-linecap="round"/></g>`;
+    extra=`<rect x="-15" y="-48" width="30" height="20" rx="4" fill="#c8333f"/><path d="M-15 -44 l7.5 12 l7.5 -12 l7.5 12 l7.5 -12" stroke="#ffd27f" stroke-width="2" fill="none"/><rect x="-16" y="-50" width="32" height="4" rx="2" fill="#f3e7d6"/>
+      <g class="stickR">${arm("M13 -56 q10 10 4 18")}<path d="M17 -38 l-16 -14" stroke="#e9d3a8" stroke-width="3" stroke-linecap="round"/></g>`; }
+  else if(o.item==="trumpet"){ extra=`${arm("M13 -56 q10 -2 12 -12")}${hand(24,-68)}<path d="M8 -68 L36 -72" stroke="#e9a63c" stroke-width="4" stroke-linecap="round"/><path d="M34 -72 l12 -9 v18z" fill="#ffd27f"/>`; }
+  else if(o.item==="flag"){ extra=`<path d="M20 -36 L26 -140" stroke="#5a3420" stroke-width="3"/><path d="M26 -140 l34 10 l-32 12z" fill="#c8333f"/><path d="M26 -140 l34 10" stroke="#ffd27f" stroke-width="2"/>${arm("M13 -56 q8 -4 10 -20")}${hand(23,-78)}`; }
+  else if(o.item==="pole"){ extra=`<path d="M18 -30 L20 -150" stroke="#5a3420" stroke-width="3"/>${arm("M13 -56 q6 -6 7 -24")}${hand(20,-82)}`; }
+  else if(o.item==="cane"){ extra=`<path d="M22 -20 V-100 q0 -14 -12 -14 q-12 0 -12 12" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M22 -20 V-100 q0 -14 -12 -14 q-12 0 -12 12" stroke="#c8333f" stroke-width="6" fill="none" stroke-dasharray="6 6" stroke-linecap="round"/>${arm("M13 -56 q8 2 9 -8")}${hand(22,-62)}`; }
+  else if(o.present){ leftArm=arm("M-13 -56 q-8 8 -8 14"); extra=`${arm("M13 -56 q8 8 8 14")}<rect x="-16" y="-62" width="32" height="24" rx="3" fill="#7fb2ff"/><rect x="-3" y="-62" width="6" height="24" fill="#ffd27f"/>${hand(-17,-44)}${hand(17,-44)}`; }
+  else extra=o.lantern?`<g><path d="M14 -56 q16 -6 18 -16" stroke="${tunic}" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M32 -72 v8" stroke="#3a2420" stroke-width="2"/><rect x="26" y="-64" width="12" height="16" rx="2" fill="#ffd27f" class="flicker"/><circle cx="32" cy="-56" r="20" fill="url(#warm)" opacity=".8" class="flicker"/></g>`
+    : o.present?`<rect x="-16" y="-62" width="32" height="24" rx="3" fill="#7fb2ff"/><rect x="-3" y="-62" width="6" height="24" fill="#ffd27f"/>`
+    : `<g class="wave"><path d="M13 -56 q16 -6 18 -24" stroke="${tunic}" stroke-width="7" stroke-linecap="round" fill="none"/><circle cx="31" cy="-82" r="5" fill="#f3cdb0"/></g>`;
+  return `<g transform="translate(${x},${y}) scale(${s*flip},${s})"><g class="${o.hop?"hop":o.march?"march":""}" style="animation-delay:${o.delay||0}s">
+    <ellipse cx="0" cy="2" rx="18" ry="4" fill="#7e8ac0" opacity=".35"/>
+    <path d="M-10 -2 q-12 0 -14 -8 q6 2 10 0z M10 -2 q12 0 14 -8 q-6 2 -10 0z" fill="#3a2420"/>
+    <rect x="-9" y="-26" width="7" height="24" fill="${legs}"/><rect x="2" y="-26" width="7" height="24" fill="${legs}"/>
+    <path d="M-9 -20 h7 M2 -20 h7 M-9 -12 h7 M2 -12 h7" stroke="#fff" stroke-width="3"/>
+    <path d="M-18 -24 L-13 -60 L13 -60 L18 -24 L12 -28 L6 -23 L0 -28 L-6 -23 L-12 -28Z" fill="${tunic}"/>
+    <rect x="-15" y="-40" width="30" height="5" fill="#3a2420"/>
+    ${leftArm}
+    ${extra}
+    <path d="M-14 -72 l-10 -8 l8 14z M14 -72 l10 -8 l-8 14z" fill="#f0bf9f"/>
+    <circle cx="0" cy="-72" r="14" fill="#f3cdb0"/>
+    <circle cx="-5" cy="-73" r="1.8" fill="#2a2244"/><circle cx="5" cy="-73" r="1.8" fill="#2a2244"/><path d="M-5 -66 q5 4 10 0" stroke="#a2405a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="-8" cy="-68" r="2.5" fill="#f19aa0" opacity=".6"/><circle cx="8" cy="-68" r="2.5" fill="#f19aa0" opacity=".6"/>
+    <path d="M-16 -80 Q -4 -120 30 -104 Q 8 -100 16 -80Z" fill="${hat}"/><rect x="-17" y="-84" width="34" height="7" rx="3.5" fill="#fff"/><circle cx="31" cy="-104" r="4.5" fill="#ffd27f"/>
+  </g></g>`;
+}
+function snowman(x,y,s){
+  return `<g transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="2" rx="40" ry="7" fill="#7e8ac0" opacity=".35"/>
+    <circle cx="0" cy="-30" r="34" fill="#f7f9ff"/><circle cx="0" cy="-84" r="25" fill="#f7f9ff"/><circle cx="0" cy="-126" r="18" fill="#f7f9ff"/>
+    <path d="M-8 -126 a3 3 0 1 0 .1 0 M8 -126 a3 3 0 1 0 .1 0" fill="#2a2244"/><circle cx="-6" cy="-129" r="2.4" fill="#2a2244"/><circle cx="6" cy="-129" r="2.4" fill="#2a2244"/>
+    <path d="M0 -123 l18 4 l-18 2z" fill="#f08a3c"/><path d="M-7 -116 q7 5 14 0" stroke="#2a2244" stroke-width="2" fill="none"/>
+    <path d="M-20 -106 q20 10 40 0 l2 8 q-22 10 -44 0z" fill="#c8333f"/><path d="M10 -100 l6 26 l8 -2 l-6 -24z" fill="#c8333f"/>
+    <path d="M-24 -88 l-34 -22 M-46 -102 l-6 -10 M24 -88 l34 -20" stroke="#5a3420" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="0" cy="-90" r="3" fill="#2a2244"/><circle cx="0" cy="-78" r="3" fill="#2a2244"/><circle cx="0" cy="-40" r="3.5" fill="#2a2244"/>
+    <g class="smbird" opacity="0"><ellipse cx="0" cy="-150" rx="10" ry="7" fill="#d4202f"/><path d="M-2 -156 l2 -10 l5 8z" fill="#d4202f"/><circle cx="6" cy="-153" r="5" fill="#d4202f"/><path d="M10 -153 l6 1.5 l-6 2z" fill="#f08a3c"/><circle cx="7" cy="-154" r="1.2" fill="#1b1422"/><path d="M-10 -150 l-8 3 l8 2z" fill="#a8121f"/></g>
+    <g class="smhat"><rect x="-16" y="-158" width="32" height="20" rx="2" fill="#2a2244"/><rect x="-22" y="-142" width="44" height="6" rx="3" fill="#2a2244"/><rect x="-16" y="-148" width="32" height="5" fill="#c8333f"/></g>
+  </g>`;
+}
+(function buildExterior(){
+  // stars
+  let h=""; for(let i=0;i<240;i++){ const x=rnd(-1000,2000), y=rnd(-800,430), r=Math.random()<.1?rnd(1.4,2.2):rnd(.5,1.3);
+    h+=`<circle class="tw" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="#fff" style="animation-delay:${rnd(0,3).toFixed(2)}s;animation-duration:${rnd(2,5).toFixed(2)}s"/>`; }
+  $("#stars").innerHTML=h;
+  // skyline windows
+  h=""; document.querySelectorAll("#skyline rect").forEach(r=>{ const x=+r.getAttribute("x"), y=+r.getAttribute("y"), w=+r.getAttribute("width"), hh=+r.getAttribute("height");
+    for(let yy=y+8; yy<y+hh-10; yy+=12) for(let xx=x+4; xx<x+w-4; xx+=8) if(Math.random()<.28) h+=`<rect x="${xx}" y="${yy}" width="3" height="4" opacity="${rnd(.35,.9).toFixed(2)}"/>`; });
+  $("#winds").innerHTML=h;
+  // far pine silhouettes
+  h=""; [-520,-440,-360,-280,-200,-130,-60,20,90,160,220,280,320,690,760,830,900,960,1030,1100,1180,1260,1340,1420,1500].forEach(x=>{ const s=rnd(.5,.9), y=508+rnd(-6,6);
+    h+=`<path d="M${x} ${y} l${-18*s} 0 l${14*s} ${-26*s} l${-10*s} 0 l${14*s} ${-24*s} l${-8*s} 0 l${8*s} ${-20*s} l${8*s} ${20*s} l${-8*s} 0 l${14*s} ${24*s} l${-10*s} 0 l${14*s} ${26*s}z"/>`; });
+  $("#farPines").innerHTML=h;
+  // mid pines (some decorated)
+  $("#midPines").innerHTML =
+    pine(-260,566,.8)+pine(-150,560,1.0)+pine(-40,570,.7)+pine(60,562,1.15,{lights:true,glow:true})+pine(170,556,.75)+pine(300,552,.85,{c:"#22684f",c2:"#1a5641"})+
+    pine(700,552,.85,{c:"#22684f",c2:"#1a5641"})+pine(820,558,.75)+pine(930,564,1.15,{lights:true,glow:true})+pine(1040,560,.9)+pine(1150,566,.8)+pine(1260,560,1);
+  // front life
+  $("#front").innerHTML =
+    reindeer(110,640,.85,{graze:true,body:"#7b4f35",dark:"#5e3c28",light:"#8b5a3c",delay:.7})+
+    reindeer(212,618,.62,{scarf:"#2f6fbf",delay:1.6})+
+    `<g id="rudolph" class="egg">${reindeer(292,642,.92,{rudolph:true,scarf:"#c8333f"})}</g>`+
+    elf(430,632,.95,{lantern:true})+
+    `<g id="snowman" class="egg">${snowman(690,640,.8)}</g>`+
+    reindeer(880,644,.8,{flip:true,graze:true,body:"#8a5a3a",delay:2.2})+
+    reindeer(1010,622,.62,{flip:true,scarf:"#2f8a52",delay:.3})+
+    pine(-120,720,1.4)+pine(1130,720,1.4);
+  // the elf parade
+  const B=`<g><rect x="-398" y="-158" width="182" height="34" rx="4" fill="#fff3e2"/><path d="M-398 -124 l10 10 l10 -10 M-236 -124 l10 10 l10 -10" fill="#c8333f"/>
+    <rect x="-398" y="-158" width="182" height="34" rx="4" fill="none" stroke="#c8333f" stroke-width="3"/>
+    <text x="-307" y="-136" text-anchor="middle" font-family="IM Fell English, Georgia, serif" font-style="italic" font-size="17" fill="#a2263a">Merry Christmas, Emma</text></g>`;
+  $("#paradeInner").innerHTML =
+    elf(-560,0,1,{march:true,delay:.23,present:true,tunic:"#c8333f",hat:"#2f8a52",legs:"#2f8a52"})+
+    elf(-480,0,1,{march:true,item:"cane",tunic:"#2f8a52"})+
+    elf(-400,0,1,{march:true,delay:.23,item:"pole",tunic:"#c8333f",hat:"#2f8a52",legs:"#2f8a52"})+
+    elf(-236,0,1,{march:true,item:"pole",tunic:"#2f8a52"})+ B +
+    elf(-150,0,1,{march:true,delay:.23,item:"drum",tunic:"#2f6fbf",hat:"#c8333f"})+
+    elf(-70,0,1,{march:true,item:"trumpet",tunic:"#c8333f",hat:"#2f8a52",legs:"#2f8a52"})+
+    elf(10,0,1,{march:true,delay:.23,item:"flag",tunic:"#2f8a52"});
+  // roof lights
+  lightsAlong("#ext .lightsPath","#houseLights",14,3.2);
+})();
+function lightsAlong(pathSel,targetSel,step,r){
+  const cols=["#ffd27f","#ff6b7a","#8fd3ff","#b6ff9e"]; let h="", k=0;
+  document.querySelectorAll(pathSel).forEach(p=>{ const L=p.getTotalLength(), n=Math.round(L/step);
+    for(let i=0;i<=n;i++){ const pt=p.getPointAtLength(L*i/n), c=cols[k++%4];
+      h+=`<circle class="bulb" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${r}" fill="${c}" style="animation-delay:${(k*.17%1.6).toFixed(2)}s"/>`; } });
+  $(targetSel).innerHTML+=h;
+}
+
+/* ---------- Santa's sleigh (origin = Santa's seat; team flies to the right) ---------- */
+function flyingReindeer(x,y,o={}){
+  const nose=o.rudolph?`<circle class="nose" cx="58" cy="-34" r="14" fill="#ff4d5a" opacity=".5" filter="url(#blur6)"/><circle cx="58" cy="-34" r="5.5" fill="#ff3b4b"/>`:`<circle cx="58" cy="-34" r="4" fill="#3a2420"/>`;
+  return `<g transform="translate(${x},${y})"><g class="bob" style="animation-delay:${o.d||0}s">
+    <g class="legB"><rect x="-26" y="2" width="7" height="30" rx="3" fill="#7a4d33"/></g><g class="legF" style="animation-delay:${o.d||0}s"><rect x="18" y="2" width="7" height="30" rx="3" fill="#7a4d33"/></g>
+    <ellipse cx="0" cy="0" rx="34" ry="15" fill="#93603f"/>
+    <path d="M-34 -4 q-10 -6 -6 -14 q6 4 8 12z" fill="#f3e6d6"/>
+    <g class="legF" style="animation-delay:${(o.d||0)+.2}s"><rect x="-18" y="2" width="7" height="30" rx="3" fill="#a26b47"/></g><g class="legB" style="animation-delay:${(o.d||0)+.1}s"><rect x="24" y="2" width="7" height="30" rx="3" fill="#a26b47"/></g>
+    <path d="M22 -8 Q30 -26 40 -32 L48 -24 Q40 -16 34 2Z" fill="#93603f"/>
+    <path d="M38 -44 q-4 -14 -16 -16 M38 -48 q-8 -6 -6 -14 M48 -44 q4 -14 14 -18" stroke="#6b4a33" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="46" cy="-36" rx="12" ry="9" fill="#a26b47"/>${nose}<circle cx="45" cy="-39" r="2" fill="#1b1422"/>
+    <path d="M24 -10 l14 4" stroke="#c8333f" stroke-width="5"/><circle cx="30" cy="-4" r="2.6" fill="#ffd27f"/>
+  </g></g>`;
+}
+(function buildSleigh(){
+  const team = flyingReindeer(330,-26,{rudolph:true,d:.0}) + flyingReindeer(250,-14,{d:.15}) + flyingReindeer(170,-2,{d:.3});
+  const reins = `<path d="M40 -40 Q120 -30 170 -10 M40 -40 Q150 -50 250 -22 M40 -40 Q200 -60 330 -34" stroke="#3a2420" stroke-width="2" fill="none"/>`;
+  $("#sleighInner").innerHTML = `
+    <g id="sparkTrail"></g>
+    ${reins}${team}
+    <!-- sack -->
+    <path d="M-86 -24 q-14 -50 18 -58 q34 -6 30 56z" fill="#8a5a3a"/>
+    <rect x="-80" y="-74" width="20" height="16" rx="2" fill="#7fb2ff" transform="rotate(-12 -70 -66)"/><rect x="-60" y="-80" width="18" height="18" rx="2" fill="#f07aa0" transform="rotate(10 -51 -71)"/>
+    <!-- Santa -->
+    <g>
+      <path d="M-30 -20 Q-34 -70 0 -74 Q30 -70 26 -20Z" fill="#c8333f"/>
+      <rect x="-4" y="-72" width="8" height="52" fill="#f7f7ff"/>
+      <circle cx="0" cy="-92" r="18" fill="#f4c7a5"/>
+      <path d="M-20 -94 Q-24 -62 0 -58 Q24 -62 20 -94 Q10 -82 0 -84 Q-10 -82 -20 -94Z" fill="#f7f7ff"/>
+      <circle cx="2" cy="-90" r="4" fill="#e79a85"/>
+      <path d="M-8 -98 q3 -3 6 0 M4 -98 q3 -3 6 0" stroke="#2a2244" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M-20 -104 C-16 -134 16 -142 36 -118 L24 -114 C14 -126 2 -122 18 -104Z" fill="#c8333f"/><rect x="-22" y="-110" width="44" height="10" rx="5" fill="#f7f7ff"/><circle cx="36" cy="-118" r="7" fill="#f7f7ff"/>
+      <g id="tossArm" style="transform-box:fill-box;transform-origin:0% 100%"><path d="M16 -60 Q36 -78 40 -98" stroke="#c8333f" stroke-width="13" stroke-linecap="round" fill="none"/><circle cx="41" cy="-102" r="8" fill="#f7f7ff"/></g>
+      <path d="M-14 -56 Q8 -44 36 -42" stroke="#c8333f" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="40" cy="-42" r="7" fill="#f7f7ff"/>
+    </g>
+    <!-- sleigh body -->
+    <path d="M-110 -36 Q-120 0 -90 6 H40 Q66 6 70 -24 Q72 -36 60 -36 Q56 -18 40 -16 H-60 Q-80 -16 -82 -40Z" fill="#b3262f"/>
+    <path d="M-110 -36 Q-120 0 -90 6 H40 Q66 6 70 -24" stroke="#ffd27f" stroke-width="4" fill="none"/>
+    <path d="M-96 6 v14 M30 6 v14" stroke="#ffd27f" stroke-width="4"/>
+    <path d="M-120 20 H60 Q86 20 84 4" stroke="#ffd27f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="-40" cy="-6" r="6" fill="#ffd27f"/>`;
+})();
+
+/* ================= living room builders ================= */
+(function buildInterior(){
+  // tree
+  const T=$("#itree"); const x=800, base=560;
+  let h=`<circle cx="${x}" cy="${base-170}" r="230" fill="url(#lamp)"/>
+    <rect x="${x-14}" y="${base-24}" width="28" height="30" fill="#5b3a26"/>
+    <path d="M${x-62} ${base+4} h124 l-12 30 h-100z" fill="#c9a36b"/><path d="M${x-62} ${base+4} h124" stroke="#a07c48" stroke-width="4"/>`;
+  const tiers=[[base-10,130,150],[base-110,110,130],[base-200,88,115],[base-280,62,95]];
+  tiers.forEach(([y,w,hh],i)=>{ const c=["#1d5a45","#22684f","#267558","#2b8062"][i], c2=["#164a39","#1a5641","#1d6049","#226a51"][i];
+    h+=`<path d="M${x-w} ${y} L${x} ${y-hh} L${x+w} ${y} Q${x+w/2} ${y+14} ${x} ${y+6} Q${x-w/2} ${y+14} ${x-w} ${y}Z" fill="${c}"/><path d="M${x} ${y-hh} L${x+w} ${y} Q${x+w/2} ${y+14} ${x} ${y+6}Z" fill="${c2}"/>`; });
+  h+=`<g fill="none" stroke="#e9a63c" stroke-width="2.5" opacity=".9">
+      <path class="tg" d="M${x-50} ${base-300} Q${x} ${base-282} ${x+46} ${base-306}"/><path class="tg" d="M${x-76} ${base-226} Q${x} ${base-196} ${x+78} ${base-232}"/>
+      <path class="tg" d="M${x-100} ${base-136} Q${x} ${base-100} ${x+104} ${base-140}"/><path class="tg" d="M${x-120} ${base-40} Q${x} ${base} ${x+124} ${base-44}"/></g>
+    <g id="itreeLights"></g>`;
+  const orn=[[-30,-250,"#c8333f"],[34,-200,"#ffd27f"],[-56,-170,"#7fb2ff"],[60,-120,"#c8333f"],[-20,-120,"#f2f2ff"],[-90,-70,"#ffd27f"],[20,-60,"#7fb2ff"],[96,-60,"#ffd27f"],[-40,-20,"#c8333f"]];
+  orn.forEach(([dx,dy,c])=>{ h+=`<circle cx="${x+dx}" cy="${base+dy}" r="9" fill="${c}"/><circle cx="${x+dx-3}" cy="${base+dy-3}" r="2.6" fill="#fff" opacity=".7"/>`; });
+  h+=`<g class="pulse-star egg" id="treeStar"><circle cx="${x}" cy="${base-372}" r="30" fill="url(#warm2)"/><path d="M${x} ${base-392} l6.5 15 l15.5 1 l-12 10 l4 16 l-14 -9 l-14 9 l4 -16 l-12 -10 l15.5 -1z" fill="#ffd27f" stroke="#fff3c4" stroke-width="1.5"/></g>`;
+  T.innerHTML=h;
+  lightsAlong("#int .tg","#itreeLights",16,3.4);
+  lightsAlong("#int .lightsPath2","#ceilLights",30,4.5);
+  lightsAlong("#int .lightsPath3","#mantelLights",18,3.2);
+  $("#framePhoto").innerHTML=`<image href="${state.photos.us}" x="448" y="160" width="104" height="84" preserveAspectRatio="xMidYMid slice"/>`;
+  let s=""; for(let i=0;i<40;i++) s+=`<circle cx="${rnd(116,294).toFixed(0)}" cy="${rnd(126,270).toFixed(0)}" r="${rnd(.5,1.4).toFixed(1)}" opacity="${rnd(.4,1).toFixed(2)}"/>`; $("#iwStars").innerHTML=s;
+})();
+// snow falling outside the living-room window
+const iwFlakes=Array.from({length:26},()=>({x:rnd(114,296),y:rnd(124,326),s:rnd(.2,.6),r:rnd(1,2.2)}));
+function iwSnow(){ let h=""; for(const f of iwFlakes){ f.y+=f.s; f.x+=Math.sin(f.y/14)*.2; if(f.y>326){f.y=124;f.x=rnd(114,296)} h+=`<circle cx="${f.x.toFixed(1)}" cy="${f.y.toFixed(1)}" r="${f.r}"/>`; } $("#iwSnow").innerHTML=h; }
+
+/* ================= snow + particles canvas ================= */
+const fx=$("#fx"), ctx=fx.getContext("2d"); let W=0,H=0,DPR=1;
+function sizeFx(){DPR=Math.min(2,devicePixelRatio||1);W=fx.clientWidth;H=fx.clientHeight;fx.width=W*DPR;fx.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)}
+const flakes=Array.from({length:reduce?60:300},()=>{const z=Math.random(); return {x:Math.random(),y:Math.random(),r:.7+z*z*3.6,s:rnd(.15,.5),d:rnd(0,6.28),z};});
+const inFlakes=Array.from({length:reduce?20:70},()=>({x:Math.random(),y:Math.random(),r:rnd(1,2.6),s:rnd(.08,.2),d:rnd(0,6.28)}));
+const parts=[];
+function burstAt(x,y,n=140,cols=["#ffd27f","#fff3c4","#ff6b7a","#8fd3ff","#ffffff"],power=1){
+  for(let i=0;i<n;i++){const a=rnd(0,6.28), v=rnd(2,9)*power;
+    parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-4*power,life:rnd(60,120),age:0,c:cols[i%cols.length],r:rnd(1.5,4),star:Math.random()<.35,g:.12});}
+}
+function sparkle(x,y){ parts.push({x:x+rnd(-6,6),y:y+rnd(-6,6),vx:rnd(-.6,.2),vy:rnd(-.2,.6),life:rnd(30,60),age:0,c:["#ffd27f","#fff3c4","#ffffff"][Math.random()*3|0],r:rnd(1,2.6),star:Math.random()<.5,g:.02}); }
+function ember(x,y){ parts.push({x:x+rnd(-20,20),y,vx:rnd(-.3,.3),vy:rnd(-1.6,-.6),life:rnd(40,80),age:0,c:["#ffb347","#ffd27f","#ff8a3c"][Math.random()*3|0],r:rnd(.8,1.8),star:false,g:-.005}); }
+function drawStar(x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2, rr=i%2?r*.45:r;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}ctx.closePath();ctx.fill()}
+function svgToScreen(svg,x,y){ const p=svg.createSVGPoint(); p.x=x; p.y=y; const m=svg.getScreenCTM(); if(!m) return {x:0,y:0}; const q=p.matrixTransform(m); const r=fx.getBoundingClientRect(); return {x:q.x-r.left,y:q.y-r.top}; }
+let tt=0, frameN=0;
+function loop(){
+  tt+=1/60; frameN++; ctx.clearRect(0,0,W,H);
+  if(!state.inside){ ctx.fillStyle="rgba(255,255,255,.85)";
+    for(const f of flakes){f.y+=f.s/H*2.2*(f.r); f.x+=Math.sin(tt+f.d)*.0004; if(f.y>1.02){f.y=-.02;f.x=Math.random()}
+      ctx.globalAlpha=.3+f.z*.6; ctx.beginPath(); ctx.arc(f.x*W,f.y*H,f.r,0,6.28); ctx.fill();} }
+  else { if(frameN%3===0) iwSnow(); if(frameN%3===0){ const p=svgToScreen(int,500,500); ember(p.x,p.y); }
+    ctx.fillStyle="#fff6e0";
+    for(const f of inFlakes){ f.y+=f.s/H*2.2*f.r; f.x+=Math.sin(tt*.7+f.d)*.0005; if(f.y>1.02){f.y=-.02;f.x=Math.random()}
+      ctx.globalAlpha=.25+.25*Math.sin(tt*2+f.d)**2; ctx.beginPath(); ctx.arc(f.x*W,f.y*H,f.r,0,6.28); ctx.fill(); } }
+  ctx.globalAlpha=1;
+  for(let i=parts.length-1;i>=0;i--){const p=parts[i]; p.age++; p.vy+=p.g; p.vx*=.985; p.x+=p.vx; p.y+=p.vy;
+    const a=1-p.age/p.life; if(a<=0){parts.splice(i,1);continue}
+    ctx.globalAlpha=a; ctx.fillStyle=p.c; if(p.star) drawStar(p.x,p.y,p.r*2); else {ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();}}
+  ctx.globalAlpha=1;
+  requestAnimationFrame(loop);
+}
+
+/* ================= sound (generated, no files) ================= */
+let AC=null, musicOn=false, musicTimer=null, musicBus=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
+function bell(freq,t,dur=1.6,vol=.18,dest){
+  const a=ac(); if(!a) return; const o=a.createOscillator(), o2=a.createOscillator(), g=a.createGain(), g2=a.createGain();
+  o.type="sine"; o2.type="sine"; o.frequency.value=freq; o2.frequency.value=freq*2.01; g2.gain.value=.25;
+  o2.connect(g2); g2.connect(g); o.connect(g); g.connect(dest||a.destination);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(.0008,t+dur);
+  o.start(t); o2.start(t); o.stop(t+dur+.05); o2.stop(t+dur+.05);
+}
+const N={D4:293.66,E4:329.63,Fs4:369.99,G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25};
+// "O Tannenbaum" (traditional, public domain) as a music box
+const TUNE=[["D4",.5],["G4",.75],["G4",.25],["G4",1.5],["A4",.5],["B4",.75],["B4",.25],["B4",1.5],["B4",.5],["A4",.5],["B4",.5],["C5",1],["Fs4",1],["A4",1],["G4",1.5],[null,.5],
+  ["D5",.5],["D5",.5],["B4",.5],["E5",1.5],["D5",.5],["D5",.5],["C5",.5],["C5",1.5],["C5",.5],["C5",.5],["A4",.5],["D5",1.5],["C5",.5],["C5",.5],["B4",.5],["B4",1.5],[null,1]];
+function playTune(){ const a=ac(); if(!a) return; let t=a.currentTime+.1; const beat=.42;
+  if(!musicBus){ musicBus=a.createGain(); musicBus.connect(a.destination); }
+  for(const [n,d] of TUNE){ if(n) bell(N[n],t,1.4,.1,musicBus); t+=d*beat; }
+  musicTimer=setTimeout(()=>{ if(musicOn) playTune(); }, (t-a.currentTime)*1000+600); }
+function setMusic(on){ musicOn=on; $("#music").textContent=on?"❚❚":"♪"; $("#music").setAttribute("aria-label",on?"Pause music":"Play music"); clearTimeout(musicTimer);
+  if(!on && musicBus && AC){ const b=musicBus; musicBus=null; b.gain.setTargetAtTime(0,AC.currentTime,.05); setTimeout(()=>b.disconnect(),400); }
+  if(on) playTune(); }
+$("#music").onclick=()=>setMusic(!musicOn);
+function chime(){ const a=ac(); if(!a) return; const t=a.currentTime; [N.G4,N.B4,N.D5,N.G4*2].forEach((f,i)=>bell(f,t+i*.09,1.8,.14)); }
+function jingle(dur=1.2){ const a=ac(); if(!a) return; const t=a.currentTime; for(let i=0;i<dur*14;i++){ bell(rnd(2400,3600),t+i/14+rnd(0,.03),.25,.035); } }
+function whoosh(){ const a=ac(); if(!a) return; const t=a.currentTime, len=1.6, buf=a.createBuffer(1,a.sampleRate*len,a.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+  const src=a.createBufferSource(); src.buffer=buf; const f=a.createBiquadFilter(); f.type="bandpass"; f.Q.value=1.2; f.frequency.setValueAtTime(300,t); f.frequency.exponentialRampToValueAtTime(2400,t+len);
+  const g=a.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.12,t+.8); g.gain.linearRampToValueAtTime(0,t+len); src.connect(f); f.connect(g); g.connect(a.destination); src.start(t); }
+function boing(){ const a=ac(); if(!a) return; const t=a.currentTime, o=a.createOscillator(), g=a.createGain();
+  o.type="triangle"; o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(620,t+.18); o.frequency.exponentialRampToValueAtTime(90,t+.6);
+  g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.7); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.75); }
+function thud(){ const a=ac(); if(!a) return; const t=a.currentTime, o=a.createOscillator(), g=a.createGain();
+  o.type="sine"; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(40,t+.25); g.gain.setValueAtTime(.5,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.35); }
+
+/* ================= countdown / toast ================= */
+function fmtLeft(ms){ if(ms<=0) return "now"; const m=Math.floor(ms/60000), d=Math.floor(m/1440), h=Math.floor(m%1440/60), mm=m%60;
+  return d>0?`in ${d} d ${h} h ${mm} min`:`in ${h} h ${mm} min`; }
+function tick(){ const left=new Date(CONFIG.unlockAtUTC)-Date.now(); $("#cdv").textContent = state.opened ? "opened ✓" : (left<=0 ? "now ✓" : fmtLeft(left)); }
+setInterval(tick,15000);
+let toastT;
+function toast(html,ms=3200){ const t=$("#toast"); t.innerHTML=html; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),ms); }
+
+/* ================= THE STORY ================= */
+const cam={active:false};
+const story={raf:0,t0:0,flags:{},running:false};
+const HOVER={x:560,y:200};       // sleigh position while hovering over the chimney (Santa's hand ends up above it)
+const CHIM={x:588,y:254};
+function sleighAt(t){
+  // returns {x,y,rot}
+  if(t<1) return {x:-700,y:40,rot:0};
+  if(t<6){ const k=easeOut((t-1)/5); return {x:lerp(-700,HOVER.x,k), y:lerp(-40,HOVER.y,k)+Math.sin(k*Math.PI)*-90, rot:lerp(-8,0,k)+Math.sin(t*3)*1.5}; }
+  if(t<9){ return {x:HOVER.x+Math.sin((t-6)*2)*6, y:HOVER.y+Math.sin((t-6)*3)*5, rot:Math.sin(t*2)*2}; }
+  const k=easeIn(clamp((t-9)/2.6)); return {x:lerp(HOVER.x,1900,k), y:lerp(HOVER.y,-420,k), rot:lerp(0,-14,clamp((t-9)*2))};
+}
+const TOSSES=[6.4,7.1,7.8], TCOL=[["#f07aa0","#fff3c4"],["#5a8fe0","#ffd27f"],["#c8333f","#ffd27f"]];
+function startStory(){
+  cancelAnimationFrame(story.raf); story.flags={}; story.running=true; story.t0=performance.now();
+  $("#tossed").innerHTML=TCOL.map((c,i)=>`<g id="toss${i}" opacity="0"><rect x="-11" y="-11" width="22" height="20" rx="2" fill="${c[0]}"/><rect x="-2.5" y="-11" width="5" height="20" fill="${c[1]}"/><path d="M0 -11 c-7 -8 -13 -3 -9 0 M0 -11 c7 -8 13 -3 9 0" stroke="${c[1]}" stroke-width="2.5" fill="none"/></g>`).join("");
+  $("#chimSmoke").style.opacity=1;
+  $("#skip").hidden=false; $("#top").classList.remove("dim");
+  $("#sub").textContent="It's Christmas Eve, and someone is on his way…";
+  const step=now=>{ const t=(now-story.t0)/1000; storyFrame(t); if(story.running) story.raf=requestAnimationFrame(step); };
+  story.raf=requestAnimationFrame(step);
+}
+function storyFrame(t){
+  const f=story.flags;
+  // sleigh
+  const s=sleighAt(t);
+  $("#sleigh").setAttribute("transform",`translate(${s.x.toFixed(1)},${s.y.toFixed(1)}) rotate(${s.rot.toFixed(2)})`);
+  if(t>1 && t<11.6 && frameN%2===0){ const p=svgToScreen(ext,s.x-125*SL,s.y+14*SL); sparkle(p.x,p.y); }
+  if(t>1.2 && !f.j1){ f.j1=1; jingle(2.2); }
+  if(t>9 && !f.j2){ f.j2=1; jingle(1.6); }
+  if(t>5.6 && !f.sub){ f.sub=1; $("#sub").textContent="Ho ho ho! A special delivery for Emma."; }
+  // Santa tosses presents into the chimney
+  const arm=$("#tossArm");
+  let armRot=0;
+  TOSSES.forEach((t0,i)=>{
+    const g=$("#toss"+i); const k=(t-t0)/.75;
+    if(t>t0-.25 && t<t0) armRot=-40*((t-(t0-.25))/.25);
+    if(t>=t0 && t<t0+.2) armRot=-40+90*((t-t0)/.2);
+    if(k>=0 && k<=1){
+      const sx=s.x+41*SL, sy=s.y-102*SL; // Santa's hand
+      const x=lerp(sx,CHIM.x,k), y=lerp(sy,CHIM.y+4,k)-Math.sin(k*Math.PI)*60, sc=lerp(1.2,.6,k);
+      g.setAttribute("opacity",k>.92?(1-k)/.08:1); g.setAttribute("transform",`translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${(k*400).toFixed(0)}) scale(${sc.toFixed(2)})`);
+    } else if(k>1 && !f["in"+i]){ f["in"+i]=1; g.setAttribute("opacity",0); const p=svgToScreen(ext,CHIM.x,CHIM.y); burstAt(p.x,p.y,40,["#ffd27f","#fff3c4","#ffffff"],.55); const a=ac(); if(a) bell([N.G4,N.B4,N.D5][i]*2,a.currentTime,.9,.1); }
+  });
+  arm.style.transform=`rotate(${armRot}deg)`;
+  if(t>6.2) $("#chimSmoke").style.opacity=0;
+  // camera: fly into the left window
+  if(t>10.4 && !f.zoom){ f.zoom=1; whoosh(); $("#top").classList.add("dim"); }
+  if(t>10.4){
+    cam.active=true;
+    const k=ease(clamp((t-10.4)/2.6));
+    ext.setAttribute("viewBox",camVB(k));
+  }
+  if(t>12.4 && !f.flash){ f.flash=1; $("#flash").classList.add("on"); }
+  if(t>13.0 && !f.inside){ f.inside=1; goInside(false); }
+}
+function camVB(k){ const v=VB.ext, ar=v[2]/v[3];
+  const tw=46, th=tw/ar, tx=415-tw/2, ty=448-th/2;
+  const w=Math.exp(lerp(Math.log(v[2]),Math.log(tw),k)), hh=w/ar;
+  const cxv=lerp(v[0]+v[2]/2, tx+tw/2, k), cyv=lerp(v[1]+v[3]*.62, ty+th/2, k);
+  return `${(cxv-w/2).toFixed(2)} ${(cyv-hh*.62).toFixed(2)} ${w.toFixed(2)} ${hh.toFixed(2)}`; }
+let camBusy=false;
+function camRun(from,to,dur,done){ camBusy=true; cam.active=true; const t0=performance.now();
+  const st=now=>{ const k=clamp((now-t0)/dur); ext.setAttribute("viewBox",camVB(lerp(from,to,ease(k)))); if(k<1) requestAnimationFrame(st); else { camBusy=false; done&&done(); } };
+  requestAnimationFrame(st); }
+function stepOutside(){
+  if(camBusy||!state.inside) return; closeModal&&closeModal(); whoosh();
+  ext.setAttribute("viewBox",camVB(1)); state.inside=false; $("#app").classList.remove("inside");
+  $("#goOut").hidden=true; $("#hint").classList.remove("show"); $("#sub").textContent="A snowy night in the village. Your present is waiting inside.";
+  camRun(1,0,1900,()=>{ cam.active=false; ext.setAttribute("viewBox",VB.ext.join(" ")); $("#goIn").hidden=false; });
+}
+function stepInside(){
+  if(camBusy||state.inside) return; $("#goIn").hidden=true; whoosh();
+  camRun(0,1,1500,()=>{ state.inside=true; $("#app").classList.add("inside");
+    setTimeout(()=>{ cam.active=false; if(state.inside) ext.setAttribute("viewBox",VB.ext.join(" ")); },1300);
+    $("#sub").textContent= state.opened ? "Two for tonight, two for when I'm with you." : "It's for you. It's getting brighter…"; $("#goOut").hidden=false; if(!state.opened && $("#bigGift").classList.contains("grow")) $("#hint").classList.add("show"); });
+}
+function goInside(skipped){
+  cancelAnimationFrame(story.raf); story.running=false;
+  setTimeout(()=>{ cam.active=false; if(state.inside) ext.setAttribute("viewBox", VB.ext.join(" ")); },1300);
+  state.inside=true; $("#app").classList.add("inside"); $("#skip").hidden=true; setTimeout(()=>{ $("#goOut").hidden=false; },skipped?2200:3000);
+  setTimeout(()=>$("#flash").classList.remove("on"), skipped?0:150);
+  $("#top").classList.remove("dim");
+  $("#sub").textContent="Listen… something is coming down the chimney.";
+  $("#cd").hidden=false; tick();
+  setTimeout(tumble, skipped?600:1400);
+}
+function tumble(){
+  const g=$("#bigGift"), m=$("#bigMove");
+  g.classList.add("here");
+  // out of the fireplace: tiny in the fire, rolls/bounces onto the rug
+  const kf=[
+    {transform:"translate(500px,515px) scale(.25) rotate(0deg)"},
+    {transform:"translate(500px,540px) scale(.45) rotate(-30deg)", offset:.25},
+    {transform:"translate(505px,600px) scale(.62) rotate(-200deg)", offset:.55},
+    {transform:"translate(506px,580px) scale(.62) rotate(-330deg)", offset:.72},
+    {transform:"translate(505px,640px) scale(.6) rotate(-360deg)", offset:.88},
+    {transform:"translate(505px,640px) scale(.55) rotate(-360deg)"}
+  ];
+  const a=m.animate(kf,{duration:1500,easing:"ease-in-out",fill:"forwards"});
+  const p=svgToScreen(int,500,500); burstAt(p.x,p.y,50,["#ffb347","#ffd27f","#fff3c4"],.6); const au=ac(); if(au){ bell(N.D5,au.currentTime,.4,.08); }
+  setTimeout(thud,820); setTimeout(thud,1300);
+  a.onfinish=()=>{
+    m.style.transform="translate(505px,640px)"; a.cancel();
+    g.classList.add("grow");
+    $("#sub").textContent="It's for you. It's getting brighter…";
+    setTimeout(()=>{ if(!state.opened && state.inside){ $("#hint").textContent="Tap the present"; $("#hint").classList.add("show"); } },3500);
+  };
+}
+$("#begin").onclick=()=>{ $("#start").classList.add("gone"); ac(); setMusic(true); startStory(); };
+$("#goOut").onclick=stepOutside; $("#goIn").onclick=stepInside;
+$("#skip").onclick=()=>{ $("#flash").classList.add("on"); setTimeout(()=>goInside(true),350); };
+
+/* ================= small gifts (after opening) ================= */
+const GIFTS=[
+  {id:"pilates", x:410,y:648, w:60,h:48, box:"#f07aa0", rib:"#fff3c4", tag:"tonight", modal:"m-pilates"},
+  {id:"letter",  x:600,y:660, w:54,h:40, box:"#fff3e2", rib:"#c8333f", tag:"a letter", modal:"m-letter"},
+  {id:"p1", x:700,y:612, w:60,h:52, box:"#3b2a6e", rib:"#ffd27f", tag:"in person", person:true},
+  {id:"p2", x:790,y:648, w:56,h:46, box:"#2b7a5b", rib:"#ff9aa6", tag:"in person", person:true},
+];
+function giftMarkup(g){
+  const w=g.w,h=g.h, lid=10;
+  const heart = g.person ? `<path transform="translate(0,${-h/2+2}) scale(.9)" d="M0 6 c-10 -8 -14 -14 -8 -19 c4 -3 8 -1 8 3 c0 -4 4 -6 8 -3 c6 5 2 11 -8 19z" fill="${g.rib}" opacity=".9"/>` : "";
+  return `<rect x="${-w}" y="${-h-50}" width="${w*2}" height="${h+80}" fill="#000" fill-opacity="0" class="nostroke"/><g class="lift">
+    <circle class="halo" cx="0" cy="${-h/2}" r="${w*.9}" fill="url(#warm2)"/>
+    <ellipse cx="0" cy="2" rx="${w/2+6}" ry="5" fill="#2a1010" opacity=".35"/>
+    <rect x="${-w/2}" y="${-h}" width="${w}" height="${h}" rx="4" fill="${g.box}"/>
+    <rect x="-5" y="${-h}" width="10" height="${h}" fill="${g.rib}"/>
+    <rect x="${-w/2-4}" y="${-h-lid}" width="${w+8}" height="${lid+2}" rx="3" fill="${g.box}" stroke="rgba(0,0,0,.1)"/>
+    <rect x="-5" y="${-h-lid}" width="10" height="${lid+2}" fill="${g.rib}"/>
+    <path d="M0 ${-h-lid} c-14 -16 -26 -8 -18 0 c4 3 12 2 18 0 c6 2 14 3 18 0 c8 -8 -4 -16 -18 0z" fill="${g.rib}"/>
+    ${heart}
+  </g><text class="tag" x="0" y="24">${g.tag}</text>`;
+}
+function buildSmallGifts(){
+  const root=$("#smallGifts"); root.innerHTML="";
+  GIFTS.forEach(g=>{
+    const outer=document.createElementNS(NS,"g"); outer.setAttribute("transform",`translate(${g.x},${g.y})`);
+    outer.setAttribute("class","gift"); outer.setAttribute("role","button"); outer.setAttribute("tabindex","0");
+    outer.setAttribute("aria-label", g.person?"A present I'll give you in person":`Present: ${g.tag}`); outer.dataset.id=g.id;
+    const pop=document.createElementNS(NS,"g"); pop.setAttribute("class","pop"); pop.innerHTML=giftMarkup(g);
+    pop.style.transform=`translate(${505-g.x}px, ${600-g.y}px) scale(.1)`; pop.style.opacity="0";
+    outer.appendChild(pop); root.appendChild(outer);
+    outer.addEventListener("click",()=>openGift(g)); outer.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openGift(g)}});
+  });
+  root.style.display="none";
+}
+function revealSmallGifts(){
+  const root=$("#smallGifts"); root.style.display="";
+  root.querySelectorAll(".pop").forEach((p,i)=>setTimeout(()=>{p.style.opacity="1";p.style.transform="none"; const a=ac(); if(a) bell([N.G4,N.B4,N.D5,N.E5][i],a.currentTime,1.2,.1);},i*240));
+}
+function markDone(id){ state.done.add(id); const el=document.querySelector(`.gift[data-id="${id}"]`); if(el) el.classList.add("done"); }
+
+/* ================= big gift ================= */
+const big=$("#bigGift");
+function tryOpenBig(){
+  if(state.opened || !big.classList.contains("grow")) return;
+  const left=new Date(CONFIG.unlockAtUTC)-Date.now();
+  if(state.lock && left>0){
+    big.classList.remove("nope"); void big.getBBox(); big.classList.add("nope"); setTimeout(()=>big.classList.remove("nope"),500);
+    showSanta(left); return;
+  }
+  state.opened=true; $("#hint").classList.remove("show"); tick();
+  big.classList.add("shake"); const a=ac(); if(a){bell(N.D5,a.currentTime,.6,.08);bell(N.D5,a.currentTime+.25,.6,.08);}
+  setTimeout(()=>{ big.classList.remove("shake"); big.classList.add("open"); chime(); const r=$("#bigBody").getBoundingClientRect(); burstAt(r.left+r.width/2, r.top+r.height/2); },1000);
+  setTimeout(revealSmallGifts,1700);
+  setTimeout(()=>{ big.style.display="none"; $("#sub").textContent="Two for tonight, two for when I'm with you."; $("#hint").textContent="Start with the pink one"; $("#hint").classList.add("show"); },2900);
+}
+big.addEventListener("click",tryOpenBig);
+big.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tryOpenBig()}});
+
+/* ================= Santa checks the nice list ================= */
+let santaT;
+function showSanta(left){
+  const sp=$("#santaPop"); $("#santaWhen").textContent="Opens "+fmtLeft(left);
+  sp.hidden=false; requestAnimationFrame(()=>requestAnimationFrame(()=>sp.classList.add("on")));
+  const a=ac(); if(a){ const t=a.currentTime; [0,.28,.56].forEach((d,i)=>{ bell(196-i*10,t+d,.5,.16); bell(392-i*20,t+d,.4,.06); }); jingle(.8); }
+  clearTimeout(santaT); santaT=setTimeout(hideSanta,9000);
+}
+function hideSanta(){ const sp=$("#santaPop"); sp.classList.remove("on"); setTimeout(()=>{ if(!sp.classList.contains("on")) sp.hidden=true; },700); }
+$("#santaOk").onclick=hideSanta;
+
+/* ================= modals ================= */
+let openModal=null;
+function showModal(id){ const m=$("#"+id); m.hidden=false; openModal=m; m.querySelector(".close").focus(); }
+function closeModal(){ if(!openModal) return; openModal.hidden=true; if(openModal.id==="m-pilates") pil.stop(); openModal=null; }
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeModal);
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{ if(e.target===m) closeModal(); }));
+addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+function openGift(g){
+  $("#hint").classList.remove("show");
+  if(g.person){
+    const el=document.querySelector(`.gift[data-id="${g.id}"] .lift`); if(el) el.animate([{transform:"translateY(0)"},{transform:"translateY(-10px) rotate(-4deg)"},{transform:"translateY(0) rotate(3deg)"},{transform:"none"}],{duration:500});
+    toast(`<b>This one comes with me</b>I'll give it to you in person, in Toronto. It's worth the wait, I promise.`,4200);
+    markDone(g.id); return;
+  }
+  showModal(g.modal); markDone(g.id);
+  if(g.id==="pilates") pil.play();
+}
+
+/* ================= faces (placeholder or photo) ================= */
+function faceSVG(who, mood){
+  const src=state.photos[who];
+  if(src){
+    const star=(x,y)=>`<path transform="translate(${x},${y})" d="M0 -6 L1.8 -1.8 L6 0 L1.8 1.8 L0 6 L-1.8 1.8 L-6 0 L-1.8 -1.8Z" fill="#ffd27f" stroke="#7a5a1a" stroke-width=".8"/>`;
+    const extra = mood==="dizzy" ? `<g>${star(-26,-34)}${star(0,-42)}${star(26,-34)}<animateTransform attributeName="transform" type="rotate" from="0 0 -30" to="360 0 -30" dur="1.2s" repeatCount="indefinite"/></g>`
+      : mood==="strain" ? `<path d="M30 -18 q5 8 0 12 q-5 -4 0 -12z" fill="#9fd4ff" stroke="#3b6a90" stroke-width=".8"/>` : "";
+    return `<circle r="31.5" fill="#3a2a2a"/><circle r="30" fill="#fff3e2"/><image href="${src}" x="-29" y="-29" width="58" height="58" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipHead)"/>${extra}`;
+  }
+  const skin = who==="emma" ? "#f3cdb0" : "#eec19f";
+  let hairBack="", hairTop="";
+  if(who==="emma"){
+    hairBack=`<path d="M-30 -2 Q-34 -34 0 -34 Q34 -34 30 -2 L33 28 Q0 38 -33 28Z" fill="#6b3e2e"/>`;
+    hairTop=`<path d="M-25 -8 Q-24 -30 0 -30 Q26 -30 25 -6 Q12 -22 -6 -16 Q-16 -12 -25 -8Z" fill="#7a4835"/>`;
+  } else {
+    hairTop=`<path d="M-26 -4 Q-30 -32 0 -31 Q28 -31 26 -6 Q20 -16 8 -18 Q-6 -24 -14 -14 Q-20 -10 -26 -4Z" fill="#4a3426"/>`;
+  }
+  let eyes, mouth;
+  if(mood==="dizzy"){ eyes=`<path d="M-13 -6 l7 7 M-6 -6 l-7 7 M6 -6 l7 7 M13 -6 l-7 7" stroke="#2a2244" stroke-width="2.4" stroke-linecap="round"/>`; mouth=`<path d="M-6 12 q3 -4 6 0 t6 0" stroke="#a2405a" stroke-width="2.4" fill="none" stroke-linecap="round"/>`; }
+  else if(mood==="laugh"){ eyes=`<path d="M-14 -2 q4 -6 8 0 M6 -2 q4 -6 8 0" stroke="#2a2244" stroke-width="2.6" fill="none" stroke-linecap="round"/>`; mouth=`<path d="M-10 7 q10 14 20 0z" fill="#a2405a"/>`; }
+  else if(mood==="strain"){ eyes=`<path d="M-14 -3 h8 M6 -3 h8" stroke="#2a2244" stroke-width="2.6" stroke-linecap="round"/>`; mouth=`<path d="M-7 11 h14" stroke="#a2405a" stroke-width="2.6" stroke-linecap="round"/>`; }
+  else { eyes=`<circle cx="-9" cy="-3" r="2.6" fill="#2a2244"/><circle cx="9" cy="-3" r="2.6" fill="#2a2244"/>`; mouth=`<path d="M-8 8 q8 8 16 0" stroke="#a2405a" stroke-width="2.4" fill="none" stroke-linecap="round"/>`; }
+  return `${hairBack}<circle r="25" fill="${skin}"/>${hairTop}${eyes}${mouth}<circle cx="-15" cy="6" r="4" fill="#f19aa0" opacity=".55"/><circle cx="15" cy="6" r="4" fill="#f19aa0" opacity=".55"/>`;
+}
+
+/* ================= Pilates animation ================= */
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function buildReformer(g, outfit, outfitDark, who){
+  g.innerHTML="";
+  // legs + frame
+  el("rect",{x:18,y:6,width:10,height:44,rx:3,fill:"#6b5a52"},g); el("rect",{x:412,y:6,width:10,height:44,rx:3,fill:"#6b5a52"},g);
+  el("rect",{x:0,y:-2,width:440,height:16,rx:7,fill:"#f2ece6",stroke:"#cdbfb3","stroke-width":2},g);
+  el("rect",{x:4,y:12,width:432,height:5,rx:2,fill:"#cdbfb3"},g);
+  // footbar
+  el("path",{d:"M34 0 L48 -70",stroke:"#7c7c86","stroke-width":7,"stroke-linecap":"round"},g);
+  el("circle",{cx:49,cy:-73,r:8,fill:"#3b3b47"},g);
+  const parts={};
+  parts.spring=el("path",{d:"",stroke:"#b8a24f","stroke-width":2.4,fill:"none"},g);
+  parts.spring2=el("path",{d:"",stroke:"#d96a6a","stroke-width":2.4,fill:"none"},g);
+  parts.carriage=el("g",{},g);
+  el("rect",{x:0,y:-22,width:150,height:20,rx:6,fill:"#2f4a5f"},parts.carriage);
+  el("rect",{x:0,y:-22,width:150,height:6,rx:3,fill:"#3e5f78"},parts.carriage);
+  el("rect",{x:112,y:-50,width:11,height:30,rx:5,fill:"#2f4a5f"},parts.carriage);
+  el("rect",{x:132,y:-34,width:22,height:12,rx:5,fill:"#3e5f78"},parts.carriage);
+  // body
+  parts.body=el("g",{},g);
+  parts.legB=el("path",{fill:"none",stroke:outfitDark,"stroke-width":13,"stroke-linecap":"round","stroke-linejoin":"round"},parts.body);
+  parts.footB=el("ellipse",{rx:8,ry:5,fill:"#eec19f"},parts.body);
+  parts.torso=el("line",{stroke:outfit,"stroke-width":28,"stroke-linecap":"round"},parts.body);
+  parts.legF=el("path",{fill:"none",stroke:outfit,"stroke-width":14,"stroke-linecap":"round","stroke-linejoin":"round"},parts.body);
+  parts.footF=el("ellipse",{rx:8,ry:5,fill:"#f3cdb0"},parts.body);
+  parts.tutu=el("g",{},parts.body);
+  { const col=who==="emma"?["#ff8fbf","#ffc8de"]:["#ffa6c9","#ffd9e8"];
+    const ruff=(len,half)=>{ let d=`M6 ${-14} L${-len} ${-half}`; const n=6; for(let i=0;i<n;i++){ const y0=-half+i*2*half/n, y1=y0+2*half/n; d+=` Q${-len-7} ${((y0+y1)/2).toFixed(1)} ${-len} ${y1.toFixed(1)}`; } return d+` L6 14Z`; };
+    parts.tutu.innerHTML=`<path d="${ruff(24,30)}" fill="${col[0]}" stroke="#d9648f" stroke-width="1.2" stroke-linejoin="round"/><path d="${ruff(15,22)}" fill="${col[1]}"/>
+      <rect x="0" y="-15" width="9" height="30" rx="4" fill="${outfit}"/><circle cx="-8" cy="-10" r="1.4" fill="#fff"/><circle cx="-16" cy="8" r="1.4" fill="#fff"/><circle cx="-4" cy="16" r="1.2" fill="#fff"/>`; }
+  parts.arm=el("path",{fill:"none",stroke:"#f0c7a6","stroke-width":9,"stroke-linecap":"round","stroke-linejoin":"round"},parts.body);
+  parts.sleeve=el("line",{stroke:outfit,"stroke-width":12,"stroke-linecap":"round"},parts.body);
+  parts.head=el("g",{},parts.body);
+  parts.face=el("g",{},parts.head);
+  parts.who=who; parts.mood=null;
+  return parts;
+}
+function setMood(P,m){ if(P.mood===m) return; P.mood=m; P.face.innerHTML=faceSVG(P.who,m); }
+function knee(h,f,L1,L2){ // knee pointing up (negative y)
+  const dx=f.x-h.x, dy=f.y-h.y; let d=Math.hypot(dx,dy); d=Math.min(d,L1+L2-.01);
+  const a=(L1*L1-L2*L2+d*d)/(2*d), hh=Math.sqrt(Math.max(0,L1*L1-a*a));
+  const mx=h.x+a*dx/d, my=h.y+a*dy/d; const c1={x:mx+hh*dy/d, y:my-hh*dx/d}, c2={x:mx-hh*dy/d, y:my+hh*dx/d};
+  return c1.y<c2.y?c1:c2;
+}
+function springD(x1,x2,y){ const n=12; let d=`M${x1} ${y}`; for(let i=1;i<=n;i++){ const x=x1+(x2-x1)*i/n; d+=` L${x.toFixed(1)} ${y+(i%2?-4:4)}`; } return d; }
+function ik(a,b,L1,L2,up){
+  const dx=b.x-a.x, dy=b.y-a.y; let d=Math.hypot(dx,dy); d=Math.min(d,L1+L2-.01);
+  const q=(L1*L1-L2*L2+d*d)/(2*d), h=Math.sqrt(Math.max(0,L1*L1-q*q));
+  const mx=a.x+q*dx/d, my=a.y+q*dy/d; const c1={x:mx+h*dy/d,y:my-h*dx/d}, c2={x:mx-h*dy/d,y:my+h*dx/d};
+  return (c1.y<c2.y)===up?c1:c2;
+}
+// Kneeling on the carriage, facing the footbar, hands on the bar; one leg stretches back and up.
+// e = 0 (both knees down) ... 1 (leg long behind, carriage pushed back); e > 1 = showing off, leg flies up.
+function kneelPose(cx,e){
+  const hip={x:cx+66,y:-64}, sh={x:hip.x-62,y:hip.y-14};
+  const head={x:sh.x-20,y:sh.y-28}, hand={x:50,y:-72};
+  const elbow=ik(sh,hand,42,42,false);
+  const kneeK={x:hip.x+4,y:-27}, footK={x:hip.x+50,y:-27};
+  const th=(e<=1? lerp(25,-12,e) : -12-(e-1)*80)*Math.PI/180;
+  const kneeE={x:hip.x+54*Math.cos(th),y:hip.y+54*Math.sin(th)}, footE={x:hip.x+108*Math.cos(th),y:hip.y+108*Math.sin(th)};
+  const k=clamp(e);
+  const knee=e<=1?{x:lerp(kneeK.x+3,kneeE.x,k),y:lerp(kneeK.y-2,kneeE.y,k)}:kneeE;
+  const foot=e<=1?{x:lerp(footK.x+3,footE.x,k),y:lerp(footK.y-3,footE.y,k)}:footE;
+  return {hip,sh,head,hand,elbow,knee,foot,kneeB:kneeK,footB:footK};
+}
+function applyPose(P,o){
+  P.torso.setAttribute("x1",o.hip.x); P.torso.setAttribute("y1",o.hip.y); P.torso.setAttribute("x2",o.sh.x); P.torso.setAttribute("y2",o.sh.y);
+  P.legF.setAttribute("d",`M${o.hip.x} ${o.hip.y} L${o.knee.x} ${o.knee.y} L${o.foot.x} ${o.foot.y}`);
+  const kb=o.kneeB||{x:o.knee.x-4,y:o.knee.y+3}, fb=o.footB||{x:o.foot.x-3,y:o.foot.y+5};
+  P.legB.setAttribute("d",`M${o.hip.x} ${o.hip.y} L${kb.x} ${kb.y} L${fb.x} ${fb.y}`);
+  P.footF.setAttribute("cx",o.foot.x); P.footF.setAttribute("cy",o.foot.y-4); P.footB.setAttribute("cx",fb.x); P.footB.setAttribute("cy",fb.y-4);
+  P.arm.setAttribute("d",`M${o.sh.x} ${o.sh.y} L${o.elbow.x} ${o.elbow.y} L${o.hand.x} ${o.hand.y}`);
+  P.sleeve.setAttribute("x1",o.sh.x); P.sleeve.setAttribute("y1",o.sh.y); P.sleeve.setAttribute("x2",o.sh.x+(o.elbow.x-o.sh.x)*.4); P.sleeve.setAttribute("y2",o.sh.y+(o.elbow.y-o.sh.y)*.4);
+  P.head.setAttribute("transform",`translate(${o.head.x},${o.head.y}) rotate(${o.headRot||0})`);
+  if(P.tutu){ const ang=Math.atan2(o.sh.y-o.hip.y,o.sh.x-o.hip.x)*180/Math.PI; P.tutu.setAttribute("transform",`translate(${o.hip.x},${o.hip.y}) rotate(${ang.toFixed(1)})`); }
+}
+const pil={
+  E:null,F:null,raf:0,t0:0,
+  build(){
+    this.E=buildReformer($("#refE"),"#9b7fd1","#7b62b0","emma");
+    this.F=buildReformer($("#refF"),"#2f3f7a","#22305f","felix");
+    let h=""; for(let i=0;i<34;i++) h+=`<circle cx="${(i*24+10)}" cy="${(18+Math.sin(i*24/127*Math.PI)*14).toFixed(1)}" r="4" fill="${["#ffd27f","#ff8aa0","#9fd8ff"][i%3]}" class="bulb" style="animation-delay:${(i*.13%1.6).toFixed(2)}s"/>`;
+    $("#pilLights").innerHTML=h;
+    let s=""; for(let i=0;i<26;i++) s+=`<circle cx="${rnd(536,734).toFixed(0)}" cy="${rnd(40,160).toFixed(0)}" r="${rnd(1,2.4).toFixed(1)}"/>`; $("#winSnow").innerHTML=s;
+    let w=""; [[536,128,22,56],[560,112,18,72],[580,140,26,44],[608,120,16,64],[628,96,22,88],[652,134,18,50],[700,124,20,60],[722,142,18,42]].forEach(([x,y,ww,hh])=>{
+      for(let yy=y+6; yy<y+hh-14; yy+=9) for(let xx=x+3; xx<x+ww-3; xx+=6) if(Math.random()<.3) w+=`<rect x="${xx}" y="${yy}" width="2.5" height="3.5" opacity="${rnd(.4,.95).toFixed(2)}"/>`; });
+    $("#pilWinds").innerHTML=w;
+  },
+  refreshFaces(){ if(!this.E) return; const a=this.E.mood,b=this.F.mood; this.E.mood=this.F.mood=null; setMood(this.E,a||"happy"); setMood(this.F,b||"happy"); },
+  play(){
+    if(!this.E) this.build();
+    cancelAnimationFrame(this.raf); this.t0=performance.now(); this.flags={}; $("#pilCard").classList.remove("show");
+    ["#bub1","#bub2","#bub3","#dizzy"].forEach(s=>$(s).setAttribute("opacity",0));
+    setMood(this.E,"happy"); setMood(this.F,"happy");
+    const step=now=>{ this.frame((now-this.t0)/1000); if(!this.over) this.raf=requestAnimationFrame(step); };
+    this.over=false; this.raf=requestAnimationFrame(step);
+  },
+  stop(){ cancelAnimationFrame(this.raf); },
+  frame(t){
+    const SNAP=8.0, LAUNCH=8.15, LAND=9.35;
+    // ---- Emma: calm footwork ----
+    let eExt = t<1 ? 0 : .5-.5*Math.cos(2*Math.PI*(t-1)/2.4);
+    if(t>SNAP+.6) eExt = lerp(eExt,0,clamp((t-SNAP-.6)/.6));
+    const ecx=lerp(96,126,eExt), E=this.E;
+    E.carriage.setAttribute("transform",`translate(${ecx},0)`);
+    E.spring.setAttribute("d",springD(8,ecx,-8)); E.spring2.setAttribute("d","");
+    const ep=kneelPose(ecx,eExt);
+    if(t>LAND+.1){ const b=Math.abs(Math.sin((t-LAND)*14))*4; ep.head.y-=b; ep.headRot=-14+Math.sin((t-LAND)*10)*4; setMood(E,"laugh"); }
+    applyPose(E,ep);
+
+    // ---- Felix ----
+    const F=this.F; let fcx;
+    if(t<LAUNCH){
+      let ext;
+      if(t<1) ext=0;
+      else if(t<4.6) ext=.5-.5*Math.cos(2*Math.PI*(t-1)/2.4);
+      else if(t<7.4) ext=.5-.5*Math.cos(2*Math.PI*(t-4.6)/0.93);   // showing off: faster, full range
+      else if(t<SNAP) ext=0; // deep wind-up (knees in)
+      else ext=clamp((t-SNAP)/.15)*1.0;
+      if(t>=4.6 && t<7.4) setMood(F,"strain"); else if(t<4.6) setMood(F,"happy");
+      fcx=lerp(96,126,ext);
+      if(t>=SNAP){ fcx = lerp(126, 300, ease(clamp((t-SNAP)/.35))); if(!this.flags.boing){this.flags.boing=1; boing();} }
+      F.carriage.setAttribute("transform",`translate(${fcx},0)`);
+      if(t<SNAP){ F.spring.setAttribute("d",springD(8,fcx,-8)); F.spring2.setAttribute("d",""); }
+      const fp=kneelPose(Math.min(fcx,150), t>=SNAP ? 1+clamp((t-SNAP)/.15)*.7 : ext);
+      F.body.removeAttribute("transform"); applyPose(F,fp);
+      this.launchPose=kneelPose(150,1.7);
+      $("#bub1").setAttribute("opacity",clamp((t-4.6)*4)*clamp((7.3-t)*4));
+    } else {
+      // carriage bangs to the end, bounces back
+      const ct=t-SNAP; fcx = ct<.35 ? lerp(126,300,ease(ct/.35)) : lerp(300,250,ease(clamp((ct-.35)/.5)));
+      F.carriage.setAttribute("transform",`translate(${fcx},0)`); $("#bub1").setAttribute("opacity",0);
+      // broken springs dangle
+      const wob=Math.sin(t*18)*6*Math.exp(-(t-SNAP)*1.5);
+      F.spring.setAttribute("d",`M8 -8 q 14 ${10+wob} 26 ${22+wob}`); F.spring2.setAttribute("d",`M${fcx} -8 q -12 ${8-wob} -22 ${18-wob}`);
+      const sitPose=(b)=>({hip:{x:520,y:36-b}, sh:{x:534,y:-22-b}, head:{x:540,y:-56-b}, knee:{x:470,y:22-b}, foot:{x:422,y:42},
+        kneeB:{x:474,y:30-b}, footB:{x:428,y:46}, elbow:{x:552,y:6-b}, hand:{x:566,y:40}, headRot:0});
+      if(t<LAND){
+        // leg flies up, carriage shoots away, he tips backwards off the end and lands on his bottom
+        const k=(t-LAUNCH)/(LAND-LAUNCH), S=this.launchPose, T=sitPose(0), ke=easeIn(clamp(k*1.15));
+        const o={};
+        for(const j of ["hip","sh","head","knee","foot","kneeB","footB","elbow","hand"]) o[j]={x:lerp(S[j].x,T[j].x,ke), y:lerp(S[j].y,T[j].y,ke)-Math.sin(Math.PI*k)*60};
+        const fl=Math.sin(t*26);
+        o.hand={x:o.sh.x+18+fl*10,y:o.sh.y-46+fl*12}; o.elbow={x:o.sh.x+10,y:o.sh.y-22};
+        o.foot.y-=Math.sin(Math.PI*k)*50+fl*8; o.knee.y-=Math.sin(Math.PI*k)*30; o.headRot=fl*10;
+        applyPose(F,o);
+        const C={x:(o.hip.x+o.sh.x)/2,y:(o.hip.y+o.sh.y)/2};
+        F.body.setAttribute("transform",`rotate(${(-40*Math.sin(Math.PI*k)).toFixed(1)} ${C.x.toFixed(1)} ${C.y.toFixed(1)})`);
+        setMood(F,"dizzy");
+      } else {
+        if(!this.flags.thud){ this.flags.thud=1; thud(); }
+        F.body.removeAttribute("transform");
+        const lt=t-LAND, bounce=lt<.35?Math.sin(lt/.35*Math.PI)*14:0, wob=Math.sin(lt*7)*Math.exp(-lt*1.2)*6;
+        const o=sitPose(bounce); o.head.x+=wob; o.sh.x+=wob*.5; o.headRot=wob*2;
+        if(lt>1.6){ o.elbow={x:o.sh.x-18,y:o.sh.y-4}; o.hand={x:o.sh.x-14,y:o.sh.y-40}; } // thumbs up
+        applyPose(F,o);
+        const dz=$("#dizzy"); dz.setAttribute("opacity",lt<4?1:clamp(1-(lt-4)));
+        let s=""; for(let i=0;i<3;i++){ const a=lt*4+i*2.09, x=110+o.head.x+Math.cos(a)*34, y=370+o.head.y-40+Math.sin(a)*10;
+          s+=`<path transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(.6)" d="M0 -12 L3.5 -4 L12 -3.5 L5.5 2 L7.5 10.5 L0 6 L-7.5 10.5 L-5.5 2 L-12 -3.5 L-3.5 -4Z" fill="#ffd27f"/>`; }
+        dz.innerHTML=s;
+        if(lt>3.4) setMood(F,"happy");
+        $("#bub2").setAttribute("opacity",clamp((lt-.3)*4)*clamp((3.6-lt)*3));
+        $("#bub3").setAttribute("opacity",clamp((lt-1.4)*4)*clamp((4.6-lt)*3));
+        if(lt>4.4 && !this.flags.card){ this.flags.card=1; $("#pilCard").classList.add("show"); chime(); }
+        if(lt>6){ this.over=true; }
+      }
+    }
+  }
+};
+$("#pilReplay").onclick=()=>pil.play();
+function fitPil(){ $("#pil").setAttribute("viewBox", innerWidth<560 ? "90 40 700 430" : "0 0 800 480"); }
+addEventListener("resize",fitPil); fitPil();
+
+
+/* ================= easter eggs ================= */
+let eggsFound=0;
+function egg(sel,fn){ const el=$(sel); if(!el) return; el.addEventListener("click",e=>{ e.stopPropagation(); eggsFound++; fn(el); }); }
+function squeak(f0=1400,f1=2200,d=.18,type="sine",vol=.12){ const a=ac(); if(!a) return; const t=a.currentTime,o=a.createOscillator(),g=a.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+d*.6); o.frequency.exponentialRampToValueAtTime(f0*.9,t+d);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+d); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.05); }
+function meow(){ squeak(520,820,.55,"triangle",.08); }
+function crackle(){ const a=ac(); if(!a) return; for(let i=0;i<12;i++){ const t=a.currentTime+Math.random()*.6, b=a.createBuffer(1,800,a.sampleRate), d=b.getChannelData(0); for(let j=0;j<d.length;j++) d[j]=(Math.random()*2-1)*Math.pow(1-j/d.length,3);
+  const s=a.createBufferSource(), g=a.createGain(); g.gain.value=.25; s.buffer=b; s.connect(g); g.connect(a.destination); s.start(t);} }
+function fb(el,origin){ el.style.transformBox="fill-box"; el.style.transformOrigin=origin||"50% 50%"; }
+// snowman: hat lifts, a cardinal was hiding underneath
+egg("#snowman",el=>{ const hat=el.querySelector(".smhat"), bird=el.querySelector(".smbird"); fb(hat,"50% 100%");
+  hat.animate([{transform:"none"},{transform:"translate(6px,-34px) rotate(-18deg)",offset:.25},{transform:"translate(6px,-34px) rotate(-18deg)",offset:.8},{transform:"none"}],{duration:2600,easing:"ease-in-out"});
+  bird.animate([{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.75},{opacity:0}],{duration:2600}); [0,.18,.36].forEach(d=>setTimeout(()=>squeak(2600,3600,.12),d*1000+400)); });
+// moon winks
+egg("#moonHit",()=>{ const f=$("#moonFace"), w=$("#moonWink"); f.animate([{opacity:0},{opacity:1,offset:.15},{opacity:1,offset:.85},{opacity:0}],{duration:2600}); chime(); });
+// Rudolph: disco nose
+egg("#rudolph",el=>{ el.querySelectorAll(".rnose").forEach(n=>n.animate([{fill:"#ff3b4b"},{fill:"#3bff7a"},{fill:"#3b8bff"},{fill:"#ffdd3b"},{fill:"#ff3bd8"},{fill:"#ff3b4b"}],{duration:500,iterations:4}));
+  const a=ac(); if(a){ const t=a.currentTime; [523,659,784,1046,784,659].forEach((f,i)=>bell(f,t+i*.1,.3,.08)); } });
+// cat wakes up for a second
+egg("#cat",()=>{ const h=$("#catHead"); fb(h,"30% 80%");
+  h.animate([{transform:"none"},{transform:"translate(2px,-9px) rotate(-12deg)",offset:.2},{transform:"translate(2px,-9px) rotate(8deg)",offset:.6},{transform:"none"}],{duration:2400,easing:"ease-in-out"});
+  for(const [sel,from,to] of [["#catAwake",0,1],["#catSleep",1,0],["#catSay",0,1],["#catZ",.8,0]]) $(sel).animate([{opacity:from},{opacity:to,offset:.15},{opacity:to,offset:.8},{opacity:from}],{duration:2400});
+  meow(); });
+// fire roars, sparks fly
+egg("#fireHit",()=>{ document.querySelectorAll("#fireplace .flame").forEach(f=>f.animate([{transform:"scale(1,1)"},{transform:"scale(1.25,1.7)",offset:.3},{transform:"scale(1,1)"}],{duration:1200,easing:"ease-out"}));
+  const r=$("#fireHit").getBoundingClientRect(); burstAt(r.left+r.width/2,r.top+r.height*.6,60,["#ffb347","#ffd27f","#ff8a3c","#fff3c4"],.7); crackle(); });
+// picture frame swings and ends up crooked (tap again to straighten)
+let crooked=false;
+egg("#frame",el=>{ fb(el,"50% 0%"); crooked=!crooked; const end=crooked?7:0;
+  el.animate([{transform:`rotate(${crooked?0:7}deg)`},{transform:"rotate(-12deg)"},{transform:"rotate(10deg)"},{transform:"rotate(-5deg)"},{transform:`rotate(${end}deg)`}],{duration:1400,easing:"ease-in-out",fill:"forwards"});
+  squeak(300,240,.35,"sawtooth",.03); });
+// a mouse lives in Felix's stocking
+egg("#stockF",el=>{ const m=$("#mouse"); m.animate([{opacity:0,transform:"translateY(14px)"},{opacity:1,transform:"translateY(-10px)",offset:.2},{opacity:1,transform:"translateY(-10px)",offset:.8},{opacity:0,transform:"translateY(14px)"}],{duration:2200,easing:"ease-out"});
+  setTimeout(()=>{squeak();setTimeout(squeak,160)},350); });
+// tree star spins, lights go disco
+egg("#treeStar",el=>{ fb(el,"50% 50%"); el.animate([{transform:"rotate(0) scale(1)"},{transform:"rotate(720deg) scale(1.4)",offset:.7},{transform:"rotate(720deg) scale(1)"}],{duration:1600,easing:"ease-in-out"});
+  const L=$("#itreeLights"); L.classList.add("disco"); setTimeout(()=>L.classList.remove("disco"),3200);
+  const a=ac(); if(a){ const t=a.currentTime; [784,988,1175,1568].forEach((f,i)=>bell(f,t+i*.08,.6,.08)); } });
+// the marmot pulls a wheelie
+egg("#marmot",el=>{ fb(el,"10% 100%"); el.animate([{transform:"scale(1.05)"},{transform:"scale(1.05) rotate(-24deg)",offset:.3},{transform:"scale(1.05) rotate(-24deg)",offset:.7},{transform:"scale(1.05)"}],{duration:1200,easing:"ease-in-out"}); squeak(900,1600,.4,"triangle",.07); });
+setTimeout(function hintEggs(){ if(state.opened && eggsFound===0 && !openModal){ $("#hint").textContent="Psst… a few things in here like to be tapped."; $("#hint").classList.add("show"); } else setTimeout(hintEggs,15000); },40000);
+
+/* ================= paper grain ================= */
+(function grain(){ try{ const c=document.createElement("canvas"); c.width=c.height=180; const g=c.getContext("2d"), d=g.createImageData(180,180);
+  for(let i=0;i<d.data.length;i+=4){ const v=110+Math.random()*90|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; }
+  g.putImageData(d,0,0); $("#grain").style.backgroundImage=`url(${c.toDataURL()})`; }catch(e){} })();
+/* ================= boot ================= */
+fit(); buildSmallGifts(); tick(); loop();
+$("#sleigh").setAttribute("transform","translate(-700,40)");
+</script>
+
+</body></html>
